@@ -1,48 +1,48 @@
 ---
 name: Architecture Decision Proposal
-about: ADR önerisi (foundational karar)
+about: ADR proposal (foundational decision)
 title: "[ADR] "
 labels: architecture, needs-decision
 assignees: ''
 ---
 
-## Karar
+## Decision
 
-<!-- Tek cümle ile ne kararlaştırılmak isteniyor -->
+<!-- One sentence describing what is to be decided -->
 
 ## Context
 
-<!-- Neden bu karar şimdi alınmalı? Hangi sorun? Hangi sürtünme? -->
+<!-- Why does this decision need to be made now? What problem? What friction? -->
 
-## Önerilen çözüm
+## Proposed solution
 
-<!-- Detaylı tarif -->
+<!-- Detailed description -->
 
-## Reddedilen alternatifler
+## Rejected alternatives
 
-1. **<alternatif 1>** — neden reddedildi
-2. **<alternatif 2>** — neden reddedildi
-3. **<alternatif 3>** — neden reddedildi
+1. **<alternative 1>** — why rejected
+2. **<alternative 2>** — why rejected
+3. **<alternative 3>** — why rejected
 
-## Sonuçlar
+## Consequences
 
-**Kazanım:**
+**Gains:**
 -
 
-**Kabul edilen risk:**
+**Accepted risks:**
 -
 
 **Mitigation:**
 -
 
-## Etkilenecek repo'lar
+## Affected repos
 
-<!-- ADR onaylandığında PR atılması gereken repo'lar -->
+<!-- Repos that will need PRs once the ADR is approved -->
 
 - [ ]
 
-## Önerilen ADR numarası
+## Proposed ADR number
 
-<!-- Mevcut en yüksek + 1 (system-wide veya backend) -->
+<!-- Highest existing + 1 (system-wide or backend) -->
 
 ADR-00XX

@@ -124,7 +124,7 @@ Templates: see `paper-board/.github/templates/` (or `agent-manager/templates/per
 - **Go:** `gofmt`, `goimports`, `golangci-lint` (config: `paper-board/.github/golangci.yaml`)
 - **TS:** ESLint + Prettier (config: shared)
 - **No emojis in code or commit messages** (unless explicitly user-facing UI)
-- **Türkçe yorum + İngilizce kod** (paper-board internal style)
+- **All comments and documentation in English** (paper-board internal style)
 
 ## Testing
 

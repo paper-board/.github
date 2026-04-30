@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Yeni özellik öner
+about: Propose a new feature
 title: "[FEAT] "
 labels: enhancement, needs-triage
 assignees: ''
@@ -8,17 +8,17 @@ assignees: ''
 
 ## Problem
 
-<!-- Hangi sorunu çözüyor? "X yapmaya çalışıyorum ama Y nedeniyle takılıyorum" -->
+<!-- What problem does this solve? "I'm trying to do X but I'm blocked because of Y" -->
 
-## Önerilen çözüm
+## Proposed solution
 
-<!-- Detaylı tarif. API surface, davranış, edge case'ler. -->
+<!-- Detailed description. API surface, behavior, edge cases. -->
 
-## Reddedilen alternatifler
+## Rejected alternatives
 
-<!-- Düşündüğün ama reddettiğin yaklaşımlar; neden reddedildi -->
+<!-- Approaches you considered but rejected; why they were rejected -->
 
-## Etkilenecek servis(ler)
+## Affected service(s)
 
 - [ ] gateway
 - [ ] identity
@@ -33,9 +33,9 @@ assignees: ''
 - [ ] cli
 - [ ] frontend
 
-## ADR gerekli mi?
+## ADR required?
 
-- [ ] Evet — ADR proposal issue ayrı açıldı
-- [ ] Hayır, mevcut ADR'lerle uyumlu
+- [ ] Yes — separate ADR proposal issue opened
+- [ ] No, consistent with existing ADRs
 
-## Ek bağlam
+## Additional context

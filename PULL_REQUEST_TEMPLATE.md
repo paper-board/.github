@@ -1,27 +1,27 @@
 ## Summary
 
-<!-- 1-3 cümle: ne değişti, neden -->
+<!-- 1-3 sentences: what changed, why -->
 
 ## Test Plan
 
-<!-- Markdown checkbox: nasıl test edildi -->
+<!-- Markdown checkbox: how it was tested -->
 
 - [ ]
 - [ ]
 
 ## ADR / CONTEXT impact
 
-<!-- Mimari karar gerektiren bir değişiklik mi? Yeni terim veya yeniden adlandırma var mı? -->
+<!-- Does this change require an architectural decision? Any new term or rename? -->
 
-- [ ] Hayır, davranış değişikliği yok
-- [ ] Yeni ADR önerildi: ADR-XXXX (link)
-- [ ] CONTEXT.md güncellendi (link)
-- [ ] Mevcut ADR'yi günceller: ADR-XXXX (link)
+- [ ] No, no behavior change
+- [ ] New ADR proposed: ADR-XXXX (link)
+- [ ] CONTEXT.md updated (link)
+- [ ] Updates an existing ADR: ADR-XXXX (link)
 
 ## Breaking change?
 
-- [ ] Hayır
-- [ ] Evet — sebep + migration path:
+- [ ] No
+- [ ] Yes — reason + migration path:
 
 ## Related Issues / PRs
 

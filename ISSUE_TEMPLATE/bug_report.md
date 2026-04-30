@@ -1,14 +1,14 @@
 ---
 name: Bug report
-about: Bir hata bildir
+about: Report a bug
 title: "[BUG] "
 labels: bug, needs-triage
 assignees: ''
 ---
 
-## Özet
+## Summary
 
-<!-- 1-2 cümle ne olduğunu özetle -->
+<!-- 1-2 sentences summarizing what happened -->
 
 ## Reproduce
 
@@ -16,24 +16,24 @@ assignees: ''
 2.
 3.
 
-## Beklenen davranış
+## Expected behavior
 
-## Gerçekleşen davranış
+## Actual behavior
 
-## Ortam
+## Environment
 
 - Repo + version: `paper-board/<repo>` @ `<commit-or-tag>`
 - OS: macOS / Linux / Windows
-- Go version (eğer ilgiliyse): `go version`
+- Go version (if relevant): `go version`
 - Docker version: `docker --version`
 - K8s version: `kubectl version --short`
 
-## Loglar / hata mesajları
+## Logs / error messages
 
 ```
 <paste here>
 ```
 
-## Ek bağlam
+## Additional context
 
-<!-- Screenshots, OpenAPI spec, gRPC trace, vs. -->
+<!-- Screenshots, OpenAPI spec, gRPC trace, etc. -->
