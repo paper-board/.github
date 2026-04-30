@@ -1,0 +1,48 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)",
+    "group:allNonMajor"
+  ],
+  "schedule": ["after 6am and before 9am every weekday"],
+  "timezone": "Europe/Istanbul",
+  "rangeStrategy": "bump",
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["minor"],
+      "automerge": false,
+      "labels": ["dependencies", "needs-review"]
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "breaking", "needs-review"],
+      "addLabels": ["needs-adr"]
+    },
+    {
+      "matchPackagePatterns": ["^github.com/paper-board/"],
+      "groupName": "paper-board internal modules",
+      "automerge": true
+    }
+  ],
+  "postUpdateOptions": [
+    "gomodTidy",
+    "gomodUpdateImportPaths"
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": true
+  }
+}

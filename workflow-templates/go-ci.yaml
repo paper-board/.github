@@ -1,0 +1,79 @@
+# Reusable GitHub Actions workflow for Go services in paper-board org.
+# Servis repo'sundan: uses: paper-board/.github/.github/workflow-templates/go-ci.yaml@main
+name: Go CI
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        type: string
+        default: "1.26"
+      coverage-threshold:
+        type: number
+        default: 75
+    secrets:
+      GHCR_TOKEN:
+        required: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.59
+          args: --timeout=5m
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:24-dind
+        options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - name: Run tests
+        run: go test -race -count=1 -coverprofile=coverage.out ./...
+      - name: Coverage gate
+        run: |
+          coverage=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          if (( $(echo "$coverage < ${{ inputs.coverage-threshold }}" | bc -l) )); then
+            echo "Coverage $coverage% below threshold ${{ inputs.coverage-threshold }}%"
+            exit 1
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - run: go build ./...
+
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v6
