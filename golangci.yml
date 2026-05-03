@@ -1,0 +1,120 @@
+# Shared golangci-lint v2 baseline for paper-board Go repos.
+# Service repos extend via:
+#   include:
+#     - "https://raw.githubusercontent.com/paper-board/.github/main/golangci.yml"
+# Spec: agent-manager/docs/standards/go-coding-conventions.md §3.
+
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - revive
+    - gocyclo
+    - depguard
+    - forbidigo
+    - wrapcheck
+    - bodyclose
+    - testpackage
+    - gosec
+    - misspell
+    - unparam
+    - sqlclosecheck
+    - ineffassign
+    - exhaustive
+  settings:
+    gocyclo:
+      min-complexity: 15
+    revive:
+      rules:
+        - { name: exported, severity: error }
+        - { name: package-comments, severity: error }
+        - { name: unused-parameter, disabled: true }
+    gosec:
+      excludes:
+        - G104
+    depguard:
+      rules:
+        no-http-routers-in-store:
+          list-mode: lax
+          files: ["**/internal/store/**/*.go"]
+          deny:
+            - { pkg: "github.com/go-chi/chi", desc: "HTTP routers banned in store layer (go-service-layout §3)" }
+        no-banned-http-frameworks:
+          list-mode: lax
+          files: ["**/*.go"]
+          deny:
+            - { pkg: "github.com/gofiber/fiber", desc: "chi/v5 only (http-api §1)" }
+            - { pkg: "github.com/gin-gonic/gin", desc: "chi/v5 only (http-api §1)" }
+        no-banned-orms:
+          list-mode: lax
+          files: ["**/*.go"]
+          deny:
+            - { pkg: "gorm.io/gorm", desc: "pgx/v5 + sqlc only (db §1)" }
+            - { pkg: "entgo.io/ent", desc: "pgx/v5 + sqlc only (db §1)" }
+            - { pkg: "github.com/uptrace/bun", desc: "pgx/v5 + sqlc only (db §1)" }
+        no-database-sql:
+          list-mode: lax
+          files: ["**/internal/store/**/*.go"]
+          deny:
+            - { pkg: "database/sql", desc: "pgx/v5 only (db §1)" }
+            - { pkg: "github.com/lib/pq", desc: "pgx/v5 only (db §1)" }
+            - { pkg: "github.com/jmoiron/sqlx", desc: "pgx/v5 only (db §1)" }
+        no-banned-config-libs:
+          list-mode: lax
+          files: ["**/*.go"]
+          deny:
+            - { pkg: "github.com/spf13/viper", desc: "sdk/config only (config §1)" }
+            - { pkg: "github.com/knadh/koanf", desc: "sdk/config only (config §1)" }
+        no-mock-frameworks:
+          list-mode: lax
+          files: ["**/*.go"]
+          deny:
+            - { pkg: "github.com/golang/mock", desc: "hand-rolled mocks (testing §4)" }
+            - { pkg: "go.uber.org/mock", desc: "hand-rolled mocks (testing §4)" }
+            - { pkg: "github.com/stretchr/testify/mock", desc: "hand-rolled mocks (testing §4)" }
+        no-direct-getenv:
+          list-mode: lax
+          files:
+            - "!**/internal/config/**"
+            - "!**/cmd/**/main.go"
+          deny:
+            - { pkg: "os", desc: "use sdk/config; os.Getenv allowed only in internal/config and cmd/*/main.go" }
+    forbidigo:
+      forbid:
+        - { pattern: '^os\.Getenv$', msg: "use sdk/config (config §1)" }
+        - { pattern: '^os\.LookupEnv$', msg: "use sdk/config (config §1)" }
+        - { pattern: '^errors\.New$', msg: "wrap an sdk/errors sentinel (error-handling §2)" }
+        - { pattern: '^http\.DefaultClient$', msg: "use sdk/httpclient.Default (cross-cutting §10C)" }
+
+  # Phase-tagged exceptions:
+  # - Phase 1.1 agents pre-retrofit: depguard rules above apply repo-wide once Task 26 lands.
+  #   Exclusions allowed only via per-service .golangci.yml `linters.exclusions.rules`, never
+  #   by removing rules here.
+  # - Phase 5+: cosign + Syft enforcement may extend gosec excludes; revisit then.
+  exclusions:
+    rules:
+      - path: '_test\.go$'
+        linters:
+          - wrapcheck
+          - gosec
+          - testpackage
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/paper-board
+
+issues:
+  max-same-issues: 0
+  max-issues-per-linter: 0
