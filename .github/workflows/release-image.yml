@@ -1,0 +1,111 @@
+# Reusable image release workflow for paper-board services.
+#
+# Builds a single binary image from a multi-target Dockerfile (--build-arg TARGET
+# selects compile target; --target selects final stage). Pushes tag triple per
+# build-release §4.1: <git_tag>, sha-<short_sha>, latest.
+#
+# Consumer (service repo, on tag push, matrix per binary):
+#   jobs:
+#     release:
+#       strategy:
+#         matrix:
+#           binary: [server, migrator]
+#       uses: paper-board/.github/.github/workflows/release-image.yml@main
+#       with:
+#         service: agents
+#         binary: ${{ matrix.binary }}
+#       secrets: inherit
+#
+# Image name: ghcr.io/paper-board/<service>-<binary>:<tag>
+# Spec: agent-manager/docs/standards/build-release.md §1, §4.
+
+name: Release Image
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        type: string
+        required: true
+      binary:
+        type: string
+        required: true
+      dockerfile-path:
+        type: string
+        default: "Dockerfile"
+      build-context:
+        type: string
+        default: "."
+    secrets:
+      GHCR_TOKEN:
+        required: true
+      COSIGN_KEY:
+        required: false
+      COSIGN_PASSWORD:
+        required: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Compute image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/paper-board/${{ inputs.service }}-${{ inputs.binary }}
+          tags: |
+            type=ref,event=tag
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
+
+      - name: Set up buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build + push
+        uses: docker/build-push-action@v6
+        id: docker
+        with:
+          context: ${{ inputs.build-context }}
+          file: ${{ inputs.dockerfile-path }}
+          target: ${{ inputs.binary }}
+          build-args: |
+            TARGET=${{ inputs.binary }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          secrets: |
+            "netrc=machine github.com login x-access-token password ${{ secrets.GHCR_TOKEN }}"
+
+      - name: Install cosign
+        if: ${{ secrets.COSIGN_KEY != '' }}
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign image
+        if: ${{ secrets.COSIGN_KEY != '' }}
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          cosign sign --yes --key env://COSIGN_KEY \
+            ghcr.io/paper-board/${{ inputs.service }}-${{ inputs.binary }}@${{ steps.docker.outputs.digest }}
+
+      - name: Generate SBOM
+        if: ${{ secrets.COSIGN_KEY != '' }}
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/paper-board/${{ inputs.service }}-${{ inputs.binary }}@${{ steps.docker.outputs.digest }}
+          format: spdx-json
+          artifact-name: sbom-${{ inputs.service }}-${{ inputs.binary }}.spdx.json

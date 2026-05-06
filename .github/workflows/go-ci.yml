@@ -1,0 +1,171 @@
+# Reusable Go CI workflow for paper-board services.
+#
+# Consumer (service repo):
+#   jobs:
+#     ci:
+#       uses: paper-board/.github/.github/workflows/go-ci.yml@main
+#       with:
+#         service-name: agents
+#         enable-e2e: true
+#       secrets: inherit
+#
+# Spec: agent-manager/docs/standards/build-release.md §2.
+
+name: Go CI
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        type: string
+        required: true
+      go-version:
+        type: string
+        default: "1.26"
+      golangci-version:
+        type: string
+        default: "v2.0.2"
+      enable-integration:
+        type: boolean
+        default: true
+      enable-e2e:
+        type: boolean
+        default: false
+      enable-helm-lint:
+        type: boolean
+        default: true
+      enable-sqlc-verify:
+        type: boolean
+        default: true
+      enable-commitlint:
+        type: boolean
+        default: true
+      enable-cover-check:
+        type: boolean
+        default: true
+      coverage-script:
+        type: string
+        default: "./scripts/cover-check.sh"
+      sqlc-version:
+        type: string
+        default: "v1.31.1"
+    secrets:
+      GHCR_TOKEN:
+        required: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: ${{ inputs.golangci-version }}
+          args: --timeout=5m
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - run: go build ./...
+      - run: go test -race -count=1 ./...
+
+  cover-check:
+    if: inputs.enable-cover-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - name: Coverage gate
+        env:
+          COVERAGE_SCRIPT: ${{ inputs.coverage-script }}
+        run: bash "$COVERAGE_SCRIPT"
+
+  integration:
+    if: inputs.enable-integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - run: go test -race -count=1 -tags=integration ./...
+
+  e2e:
+    if: inputs.enable-e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - run: go test -race -count=1 -tags=e2e ./...
+
+  sqlc-verify:
+    if: inputs.enable-sqlc-verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+      - name: Install sqlc
+        run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@${{ inputs.sqlc-version }}
+      - name: Configure GOPRIVATE
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/paper-board/*
+      - run: make sqlc-verify
+
+  helm-lint:
+    if: inputs.enable-helm-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.15.4
+      - run: helm lint helm/${{ inputs.service-name }}
+
+  commitlint:
+    if: inputs.enable-commitlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v6
