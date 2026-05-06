@@ -40,6 +40,9 @@ on:
       enable-commitlint:
         type: boolean
         default: true
+      enable-cover-check:
+        type: boolean
+        default: true
       coverage-script:
         type: string
         default: "./scripts/cover-check.sh"
@@ -84,6 +87,7 @@ jobs:
       - run: go test -race -count=1 ./...
 
   cover-check:
+    if: inputs.enable-cover-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -96,7 +100,9 @@ jobs:
           git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
           go env -w GOPRIVATE=github.com/paper-board/*
       - name: Coverage gate
-        run: bash ${{ inputs.coverage-script }}
+        env:
+          COVERAGE_SCRIPT: ${{ inputs.coverage-script }}
+        run: bash "$COVERAGE_SCRIPT"
 
   integration:
     if: inputs.enable-integration
