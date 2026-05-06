@@ -51,7 +51,7 @@ on:
         default: "v1.31.1"
     secrets:
       GHCR_TOKEN:
-        required: true
+        required: false
 
 jobs:
   lint:
@@ -63,9 +63,13 @@ jobs:
           go-version: ${{ inputs.go-version }}
           cache: true
       - name: Configure GOPRIVATE
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          go env -w GOPRIVATE=github.com/paper-board/*
+          if [ -n "$GHCR_TOKEN" ]; then
+            git config --global url."https://x-access-token:${GHCR_TOKEN}@github.com/".insteadOf "https://github.com/"
+            go env -w GOPRIVATE=github.com/paper-board/*
+          fi
       - uses: golangci/golangci-lint-action@v6
         with:
           version: ${{ inputs.golangci-version }}
@@ -80,9 +84,13 @@ jobs:
           go-version: ${{ inputs.go-version }}
           cache: true
       - name: Configure GOPRIVATE
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          go env -w GOPRIVATE=github.com/paper-board/*
+          if [ -n "$GHCR_TOKEN" ]; then
+            git config --global url."https://x-access-token:${GHCR_TOKEN}@github.com/".insteadOf "https://github.com/"
+            go env -w GOPRIVATE=github.com/paper-board/*
+          fi
       - run: go build ./...
       - run: go test -race -count=1 ./...
 
@@ -96,9 +104,13 @@ jobs:
           go-version: ${{ inputs.go-version }}
           cache: true
       - name: Configure GOPRIVATE
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          go env -w GOPRIVATE=github.com/paper-board/*
+          if [ -n "$GHCR_TOKEN" ]; then
+            git config --global url."https://x-access-token:${GHCR_TOKEN}@github.com/".insteadOf "https://github.com/"
+            go env -w GOPRIVATE=github.com/paper-board/*
+          fi
       - name: Coverage gate
         env:
           COVERAGE_SCRIPT: ${{ inputs.coverage-script }}
@@ -114,9 +126,13 @@ jobs:
           go-version: ${{ inputs.go-version }}
           cache: true
       - name: Configure GOPRIVATE
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          go env -w GOPRIVATE=github.com/paper-board/*
+          if [ -n "$GHCR_TOKEN" ]; then
+            git config --global url."https://x-access-token:${GHCR_TOKEN}@github.com/".insteadOf "https://github.com/"
+            go env -w GOPRIVATE=github.com/paper-board/*
+          fi
       - run: go test -race -count=1 -tags=integration ./...
 
   e2e:
@@ -129,9 +145,13 @@ jobs:
           go-version: ${{ inputs.go-version }}
           cache: true
       - name: Configure GOPRIVATE
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          go env -w GOPRIVATE=github.com/paper-board/*
+          if [ -n "$GHCR_TOKEN" ]; then
+            git config --global url."https://x-access-token:${GHCR_TOKEN}@github.com/".insteadOf "https://github.com/"
+            go env -w GOPRIVATE=github.com/paper-board/*
+          fi
       - run: go test -race -count=1 -tags=e2e ./...
 
   sqlc-verify:
@@ -146,9 +166,13 @@ jobs:
       - name: Install sqlc
         run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@${{ inputs.sqlc-version }}
       - name: Configure GOPRIVATE
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          git config --global url."https://x-access-token:${{ secrets.GHCR_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          go env -w GOPRIVATE=github.com/paper-board/*
+          if [ -n "$GHCR_TOKEN" ]; then
+            git config --global url."https://x-access-token:${GHCR_TOKEN}@github.com/".insteadOf "https://github.com/"
+            go env -w GOPRIVATE=github.com/paper-board/*
+          fi
       - run: make sqlc-verify
 
   helm-lint:
