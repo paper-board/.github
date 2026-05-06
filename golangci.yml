@@ -1,7 +1,17 @@
 # Shared golangci-lint v2 baseline for paper-board Go repos.
-# Service repos extend via:
-#   include:
-#     - "https://raw.githubusercontent.com/paper-board/.github/main/golangci.yml"
+#
+# Consumption: vendor this file verbatim into each service repo as
+# `.golangci.yml`. golangci-lint v2 (≥ 2.11) does NOT support `include:`
+# at the top level — the schema validator rejects it as an unknown key —
+# so URL-based config inheritance is not yet possible. A nightly drift CI
+# job in this repo (planned, service-template Task 32) will diff the
+# vendored copies against this baseline and open issues on divergence.
+#
+# Service-local overrides (e.g. wrapcheck.ignorePackageGlobs for the
+# service's internal/* packages) belong under `linters.exclusions.rules`
+# or alongside the existing `linters.settings.*` blocks in the vendored
+# copy — never by removing rules from this baseline.
+#
 # Spec: agent-manager/docs/standards/go-coding-conventions.md §3.
 
 version: "2"
