@@ -7,7 +7,7 @@
 # job in this repo (planned, service-template Task 32) will diff the
 # vendored copies against this baseline and open issues on divergence.
 #
-# Service-local overrides (e.g. wrapcheck.ignorePackageGlobs for the
+# Service-local overrides (e.g. wrapcheck.ignore-package-globs for the
 # service's internal/* packages) belong under `linters.exclusions.rules`
 # or alongside the existing `linters.settings.*` blocks in the vendored
 # copy — never by removing rules from this baseline.
