@@ -24,7 +24,7 @@ on:
         default: "1.26"
       golangci-version:
         type: string
-        default: "v2.0.2"
+        default: "v2.12.2"
       enable-integration:
         type: boolean
         default: true
@@ -65,7 +65,7 @@ jobs:
         run: |
           git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
           go env -w GOPRIVATE=github.com/paper-board/*
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ inputs.golangci-version }}
           args: --timeout=5m
@@ -173,6 +173,9 @@ jobs:
   commitlint:
     if: inputs.enable-commitlint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
