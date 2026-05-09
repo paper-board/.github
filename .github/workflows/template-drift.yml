@@ -1,0 +1,135 @@
+# Nightly drift detector. Diffs each backend service repo against an
+# init.sh-rendered copy of paper-board/service-template@main. On drift,
+# files (or appends a comment to) a GitHub issue in this repo.
+#
+# Setup requirements:
+# - secrets.DRIFT_PAT: classic PAT (or fine-grained token) with read access
+#   to all paper-board/* private repos. Must be added at the org or repo
+#   level by an admin. actions/checkout uses it to clone service-template +
+#   service repos cross-repo. Without it, all matrix jobs fail at the first
+#   external checkout step with an auth error.
+#
+# Spec: agent-manager/tasks/2026-05-02-adr-0010-gap-analysis.md §33.
+# Comparator: scripts/compare-template.sh.
+# Allowlist semantics: template-drift-allowlist.md.
+
+name: template-drift
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 06:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: agents
+            advisory_lock_id: 3
+            port: 8080
+            enable_e2e: true
+          # Future entries (uncomment once each repo lands):
+          # - service: identity
+          #   advisory_lock_id: 1
+          #   port: 8081
+          #   enable_e2e: false
+          # - service: billing
+          #   advisory_lock_id: 2
+          #   port: 8082
+          #   enable_e2e: false
+          # - service: platform
+          #   advisory_lock_id: 4
+          #   port: 8084
+          #   enable_e2e: false
+    steps:
+      - name: Checkout drift workflow + scripts
+        uses: actions/checkout@v4
+        with:
+          path: drift-rules
+
+      - name: Checkout service-template
+        uses: actions/checkout@v4
+        with:
+          repository: paper-board/service-template
+          path: template
+          token: ${{ secrets.DRIFT_PAT }}
+
+      - name: Render template with service params
+        run: |
+          cp -r template rendered
+          cd rendered
+          rm -rf .git
+          SVC=${{ matrix.service }} \
+          ADVISORY_LOCK_ID=${{ matrix.advisory_lock_id }} \
+          PORT=${{ matrix.port }} \
+          ./init.sh
+
+      - name: Apply per-service overrides
+        run: |
+          if [ "${{ matrix.enable_e2e }}" = "true" ]; then
+            sed -i 's|enable-e2e: false|enable-e2e: true|' rendered/.github/workflows/ci.yml
+          fi
+
+      - name: Checkout service repo
+        uses: actions/checkout@v4
+        with:
+          repository: paper-board/${{ matrix.service }}
+          path: ${{ matrix.service }}
+          token: ${{ secrets.DRIFT_PAT }}
+
+      - name: Compare shapes
+        id: drift
+        run: |
+          set +e
+          drift-rules/scripts/compare-template.sh \
+            --template rendered \
+            --service ${{ matrix.service }} \
+            --service-name ${{ matrix.service }} \
+            > drift-report.txt 2>&1
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          cat drift-report.txt
+
+      - name: File or update drift issue
+        if: steps.drift.outputs.exit_code != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SERVICE: ${{ matrix.service }}
+        run: |
+          TITLE_PREFIX="drift: ${SERVICE} diverges from service-template"
+          DATE=$(date -u +%F)
+
+          existing=$(gh issue list \
+            --repo paper-board/.github \
+            --search "${TITLE_PREFIX} in:title state:open" \
+            --json number \
+            --jq '.[0].number // empty')
+
+          {
+            echo "Drift report — ${DATE} (run #${{ github.run_id }})"
+            echo
+            echo "<details><summary>Full report</summary>"
+            echo
+            echo '```'
+            cat drift-report.txt
+            echo '```'
+            echo
+            echo "</details>"
+          } > issue-body.md
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" \
+              --repo paper-board/.github \
+              --body-file issue-body.md
+          else
+            gh issue create \
+              --repo paper-board/.github \
+              --title "${TITLE_PREFIX}" \
+              --body-file issue-body.md
+          fi
