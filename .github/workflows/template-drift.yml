@@ -61,19 +61,28 @@ jobs:
           path: template
           token: ${{ secrets.DRIFT_PAT }}
 
+      # Matrix values flow through `env:` blocks rather than direct `${{ }}`
+      # interpolation in `run:` shell strings. Hardcoded today, but the moment
+      # workflow_dispatch inputs or issue-ops triggers feed these values, the
+      # interpolation pattern becomes a shell injection vector. Pre-empt now.
+      # (Greptile P2#2 on PR #8.)
+
       - name: Render template with service params
+        env:
+          SVC: ${{ matrix.service }}
+          ADVISORY_LOCK_ID: ${{ matrix.advisory_lock_id }}
+          PORT: ${{ matrix.port }}
         run: |
           cp -r template rendered
           cd rendered
           rm -rf .git
-          SVC=${{ matrix.service }} \
-          ADVISORY_LOCK_ID=${{ matrix.advisory_lock_id }} \
-          PORT=${{ matrix.port }} \
-          ./init.sh
+          SVC="$SVC" ADVISORY_LOCK_ID="$ADVISORY_LOCK_ID" PORT="$PORT" ./init.sh
 
       - name: Apply per-service overrides
+        env:
+          ENABLE_E2E: ${{ matrix.enable_e2e }}
         run: |
-          if [ "${{ matrix.enable_e2e }}" = "true" ]; then
+          if [ "$ENABLE_E2E" = "true" ]; then
             sed -i 's|enable-e2e: false|enable-e2e: true|' rendered/.github/workflows/ci.yml
           fi
 
@@ -86,12 +95,14 @@ jobs:
 
       - name: Compare shapes
         id: drift
+        env:
+          SVC: ${{ matrix.service }}
         run: |
           set +e
           drift-rules/scripts/compare-template.sh \
             --template rendered \
-            --service ${{ matrix.service }} \
-            --service-name ${{ matrix.service }} \
+            --service "$SVC" \
+            --service-name "$SVC" \
             > drift-report.txt 2>&1
           echo "exit_code=$?" >> "$GITHUB_OUTPUT"
           cat drift-report.txt
