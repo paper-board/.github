@@ -35,11 +35,11 @@ jobs:
             advisory_lock_id: 3
             port: 8080
             enable_e2e: true
+          - service: identity
+            advisory_lock_id: 1
+            port: 8081
+            enable_e2e: false
           # Future entries (uncomment once each repo lands):
-          # - service: identity
-          #   advisory_lock_id: 1
-          #   port: 8081
-          #   enable_e2e: false
           # - service: billing
           #   advisory_lock_id: 2
           #   port: 8082
