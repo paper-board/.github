@@ -62,9 +62,10 @@ checks existence. The list mirrors `service-template`'s post-init layout.
 Adjustments applied to the rendered template **before** diffing. These
 are intentional service-level decisions, not drift.
 
-| Service  | Override                                       |
-|----------|------------------------------------------------|
+| Service  | Override                                         |
+|----------|--------------------------------------------------|
 | agents   | `enable-e2e: true` in `.github/workflows/ci.yml` |
+| identity | (none — straight rendered template)              |
 
 Add new entries to the matrix in `template-drift.yml` and document the
 override here.
