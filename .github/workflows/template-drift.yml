@@ -50,12 +50,12 @@ jobs:
           #   enable_e2e: false
     steps:
       - name: Checkout drift workflow + scripts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: drift-rules
 
       - name: Checkout service-template
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: paper-board/service-template
           path: template
@@ -87,7 +87,7 @@ jobs:
           fi
 
       - name: Checkout service repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: paper-board/${{ matrix.service }}
           path: ${{ matrix.service }}
