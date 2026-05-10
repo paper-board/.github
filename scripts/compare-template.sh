@@ -117,8 +117,10 @@ done
 # (e.g. agents uses 000001_minimal, template's init.sh ships 000001_init).
 # Glob match keeps both conventions valid.
 for direction in up down; do
+  # SERVICE_DIR is quoted; the glob portion is intentionally unquoted so the
+  # shell expands it. SC2086 fires on the glob, not on $SERVICE_DIR.
   # shellcheck disable=SC2086
-  if ! ls $SERVICE_DIR/migrations/schema/000001_*.${direction}.sql >/dev/null 2>&1; then
+  if ! ls "${SERVICE_DIR}"/migrations/schema/000001_*."${direction}".sql >/dev/null 2>&1; then
     echo "MISSING: migrations/schema/000001_*.${direction}.sql"
     drift_count=$((drift_count + 1))
   else

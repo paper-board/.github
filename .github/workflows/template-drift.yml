@@ -111,14 +111,16 @@ jobs:
             --json number \
             --jq '.[0].number // empty')
 
+          # No outer fence: compare-template.sh already emits markdown-friendly
+          # output (## headers + per-file ```diff fences). Wrapping in another
+          # ``` block would prematurely close the outer fence at the first
+          # inner ``` (Greptile P1 on PR #8).
           {
             echo "Drift report — ${DATE} (run #${{ github.run_id }})"
             echo
             echo "<details><summary>Full report</summary>"
             echo
-            echo '```'
             cat drift-report.txt
-            echo '```'
             echo
             echo "</details>"
           } > issue-body.md
