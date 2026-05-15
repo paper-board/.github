@@ -35,6 +35,19 @@ to diverge, propose a template change instead.
 - `.github/workflows/release.yml`
 - `.github/workflows/ci.yml` (after `enable-e2e` flip)
 
+### Post Phase 2 — identity-aware middleware is the Tier 1 baseline
+
+Since `service-template@v0.2.0` (Phase 2 Task 11.5; 2026-05-14), the rendered
+`internal/middleware/middleware.go` ships the identity-aware
+`sdkAuth.Require(JWT, APIKey)` default — splitting `CommonNoAuth` (probes,
+recovery, logging) from `Auth` (`sdkAuth.Require`) at the `chi.Mux` level so
+probes bypass auth verification while still being observed. Downstream
+services (`agents` shipped Phase 2 Task 12 with byte-match NO-DIFF;
+`identity` ships the same pattern via its own server; future `billing` +
+`platform` must adopt) bootstrap with this default rendered in place.
+**No allowlist entries added** — all downstream services must render
+byte-identical `middleware.go` (D9 invariant; ADR-0012 `agent-manager/docs/adr/0012-auth-flow.md`).
+
 ## Tier 2 — presence-only
 
 Service-specific content lives behind these paths; the comparator only
