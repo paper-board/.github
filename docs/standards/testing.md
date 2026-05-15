@@ -350,7 +350,7 @@ func TestSSEStream_Basic(t *testing.T) {
 
 `testdata/golden/sse_stream_basic.txt`:
 
-```
+```text
 event: text
 data: Hello
 
@@ -370,7 +370,7 @@ when `ResponseChunks` is set.
 
 ### `-update` flag protocol
 
-```
+```bash
 go test -tags=integration -update ./internal/api/...
 ```
 
@@ -389,7 +389,7 @@ Re-writes golden files. Re-write MUST be reviewed in the PR diff. Reviewer check
 
 ### Where do fixtures live
 
-```
+```text
 internal/<pkg>/testdata/
 ├── golden/                    # AssertGolden targets
 │   ├── sse_stream_basic.txt

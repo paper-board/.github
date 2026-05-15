@@ -272,13 +272,6 @@ linters:
             - { pkg: "github.com/golang/mock", desc: "hand-rolled mocks (testing §4)" }
             - { pkg: "go.uber.org/mock", desc: "hand-rolled mocks (testing §4)" }
             - { pkg: "github.com/stretchr/testify/mock", desc: "hand-rolled mocks (testing §4)" }
-        no-direct-getenv:
-          list-mode: lax
-          files:
-            - "!**/internal/config/**"
-            - "!**/cmd/**/main.go"
-          deny:
-            - { pkg: "os", desc: "use sdk/config; os.Getenv allowed only in internal/config and cmd/*/main.go" }
     forbidigo:
       forbid:
         - { pattern: '^os\.Getenv$', msg: "use sdk/config (config §1)" }
