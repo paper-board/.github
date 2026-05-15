@@ -36,7 +36,7 @@ Each service connects with its own DB user; PoLP applies. The user has USAGE onl
 **Gain:**
 - Postgres-level boundary: unauthorized cross-schema access fails at runtime.
 - One RDS instance — cheap.
-- Cross-schema joins still possible for ad-hoc analytics via a `superuser` (e.g. read replica).
+- Cross-schema joins for ad-hoc analytics via a dedicated `analytics_readonly` role (SELECT on required schemas) or security-definer views on a read replica — no superuser privileges granted.
 - Migrating a schema to its own DB later is a one-day operation: `pg_dump --schema=billing | pg_restore`.
 
 **Risk and mitigation:**

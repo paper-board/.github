@@ -23,8 +23,8 @@ Seven services need to communicate. The public surface is customer-facing (brows
 - Phase 6+: client-side load balancing.
 
 **mTLS:**
-- Phases 1-4: plain HTTP/2 + NetworkPolicy default-deny.
-- Phase 5+: cert-manager + mTLS.
+- Phases 1-4: plain HTTP/2 + NetworkPolicy default-deny. NetworkPolicy alone does not provide service identity or message integrity; an interim shared-secret HMAC header (`x-internal-token`) is required on all intra-cluster gRPC calls to prevent header spoofing of `x-user-id`/`x-org-id`/`x-roles` before mTLS lands.
+- Phase 5+: cert-manager + mTLS (replaces the interim HMAC mechanism).
 
 **Versioning:** major version in proto package name (`identity.v1`, `identity.v2`); breaking changes ship as a new package. `buf breaking` blocks PRs that violate compatibility.
 
@@ -43,7 +43,7 @@ Seven services need to communicate. The public surface is customer-facing (brows
 - Customer documentation is Stripe-style OpenAPI.
 - Internal type safety is enforced at compile time via proto.
 
-**Auth propagation:** the gateway (or the per-service middleware in Phases 1-2) verifies the JWT or API key once. Downstream gRPC metadata carries `x-user-id`, `x-org-id`, `x-roles`, `x-trace-id`. Internal trust is delivered by NetworkPolicy through Phase 4 and by mTLS from Phase 5.
+**Auth propagation:** the gateway (or the per-service middleware in Phases 1-2) verifies the JWT or API key once. Downstream gRPC metadata carries `x-user-id`, `x-org-id`, `x-roles`, `x-trace-id`. In Phases 1-4 the interim HMAC header (`x-internal-token`) authenticates the caller service; from Phase 5 mTLS peer certificates replace it.
 
 **Risk and mitigation:**
 - Two specs to maintain (proto + auto-generated OpenAPI) — proto is the single source of truth, not a duplicate.

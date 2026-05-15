@@ -36,7 +36,7 @@ type Config struct {
 func Run(ctx context.Context, cfg Config, args []string) error
 ```
 
-Subcommands (cobra): `up [--dry-run]`, `down N`, `force VERSION`, `version`, `drop` (dev-only, gated by `MIGRATOR_ENV=dev`).
+Subcommands (cobra): `up [--dry-run]`, `down N`, `force VERSION`, `version`, `drop` (dev-only; requires `MIGRATOR_ENV=dev`, an explicit `--confirm=drop-<schema>` token matching the target schema name, and a non-prod allowlist check; hard-denied when `MIGRATOR_ENV=production`).
 
 Each service ships a Helm `pre-install` / `pre-upgrade` Job that runs its migrator.
 

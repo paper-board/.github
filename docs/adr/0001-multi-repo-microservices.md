@@ -27,7 +27,7 @@ The original backend design (plan/14) assumed a single Go monorepo with multiple
 - Solo-dev ops cost is 12× (CI, GHCR images, Helm subcharts, Renovate per repo).
 - Shared-code governance: `sdk` + `proto` SemVer discipline. A breaking change in `sdk` requires bumping every consumer service.
 - Cross-repo refactors are expensive (e.g. adding a JWT claim → 6+ coordinated PRs).
-- GOPRIVATE auth in every CI run (PAT or SSH key).
+- GOPRIVATE auth in every CI run — default is ephemeral credentials (GitHub OIDC token or short-lived installation token); PATs/SSH keys are documented exception flows requiring limited scope, rotation policy, and justification.
 - Local dev is more complex (`go work` + Tilt + Kind, or per-repo dev workflow).
 
 **Mitigation:**

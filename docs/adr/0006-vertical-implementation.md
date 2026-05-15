@@ -16,7 +16,7 @@ The original phase order in this ADR (identity → billing → agents → platfo
 
 ## Rejected alternatives
 
-- **Horizontal (plan/00 default).** End-to-end verification slips to the end of Phase 1; risk discovery is delayed; the SDK feedback loop is loose; multi-repo D loses its rhythm.
+- **Horizontal (plan/00 default).** End-to-end verification slips to the end of Phase 1; risk discovery is delayed; the SDK feedback loop is loose; multi-repo dev loses its rhythm.
 - **Hybrid (Phase 1.0 horizontal + Phase 1.1+ vertical).** In practice identical to vertical because Phase 1.0 is small.
 
 ## Consequences
