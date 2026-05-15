@@ -30,7 +30,7 @@ value is available. A service MUST NOT redefine a canonical key with different s
 | `agent_id`     | uuid     | per-request domain context              | request bound to an agent           |
 | `event_type`   | string   | structured emitter key                  | session_event lifecycle logs        |
 | `error`        | string   | `slog.Any("error", err)`                | warn/error log                      |
-| `error.kind`   | string   | sentinel name (Topic 8)                 | sentinel-typed errors               |
+| `error.kind`   | string   | sentinel name (error-handling.md §2)    | sentinel-typed errors               |
 | `duration_ms`  | int      | timing                                  | request-scoped final log            |
 
 Service-specific keys MUST be prefixed with the service name (e.g. `billing.invoice_id`,
@@ -64,7 +64,7 @@ func WithAgent(ctx context.Context, id uuid.UUID) context.Context
 Every service MUST initialize OTel via `sdk/obs.SetupOTel(serviceName, version)`. Exporter MUST
 be **OTLP/HTTP** (not OTLP/gRPC) for traces and metrics.
 
-### Endpoint configuration (Topic 3 cross-reference)
+### Endpoint configuration (see configuration.md)
 
 | Env var                         | Type   | Default | Purpose                                              |
 |---------------------------------|--------|---------|------------------------------------------------------|
@@ -108,7 +108,7 @@ func SetupOTel(serviceName, version string) (Shutdown, error)
 
 ### 3.1 HTTP (inbound)
 
-`sdk/httpmw.OTel` (Topic 4B stage 3) MUST extract `traceparent` and `tracestate` headers using
+`sdk/httpmw.OTel` (http-api-conventions.md §2 stage 3) MUST extract `traceparent` and `tracestate` headers using
 the W3C TraceContext propagator and start the server span. Span name `<METHOD> <route_pattern>`
 (e.g. `POST /v1/sessions/{id}/prompt`).
 
@@ -221,7 +221,7 @@ would be a `slog.Handler` wrapper in `sdk/log` mirroring `slog.LevelError` recor
 ### Rule
 
 - Default: `INFO`.
-- `LOG_LEVEL` env var (Topic 3 Config field) overrides: `debug | info | warn | error`. Validated
+- `LOG_LEVEL` env var (configuration.md) overrides: `debug | info | warn | error`. Validated
   via `validator/v10` `oneof=debug info warn error`.
 - `DEBUG` MUST NOT be the default in any deployed environment (dev/staging/prod). Local
   docker-compose MAY set `LOG_LEVEL=debug`.

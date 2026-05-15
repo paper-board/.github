@@ -46,7 +46,7 @@ listener with grpc-go and forces a Fiber-shaped middleware ecosystem.
 
 Every service's `internal/api` MUST register middleware in this exact order:
 
-```
+```text
 1. RequestID         chi.middleware.RequestID            stamp X-Request-ID early
 2. RealIP            chi.middleware.RealIP               resolve X-Forwarded-For BEFORE log
 3. OTelTrace         sdk/httpmw.OTel                     extract W3C traceparent, start span
@@ -126,7 +126,7 @@ Regardless of mode, downstream handlers MUST read auth state via these `ctx` key
 
 ### Modes
 
-```
+```text
 AUTH_MODE=jwt              verify Bearer JWT against identity service via gRPC.
 AUTH_MODE=api-key          verify ApiKey against identity service via gRPC.
 AUTH_MODE=trust-headers    trust gateway-injected x-user-id/x-org-id/x-roles headers.
@@ -218,7 +218,7 @@ used only for admin/debug endpoints with naturally bounded result sets (≤500 r
 ### Cursor wire shape
 
 Request:
-```
+```http
 GET /v1/agents?after=<base64>&limit=20
 ```
 
@@ -266,7 +266,7 @@ For ascending cursors, swap operators. Topic 5 (Database) elaborates.
 
 ### Offset wire shape (admin only)
 
-```
+```http
 GET /admin/users?page=1&size=20
 {"items":[...], "page":1, "size":20, "total":347}
 ```
@@ -369,7 +369,7 @@ shipped) and is mounted on the relevant routes only (not on safe GETs).
 
 ### Wire shape
 
-```
+```http
 POST /v1/agents
 Idempotency-Key: 7c1d-4a23-...   (caller-generated, opaque to server, ≤ 128 ASCII bytes)
 ```
@@ -403,6 +403,6 @@ hash, and a content-addressable replay payload.
 | §4  | Auth boundary; stable ctx keys                                    | sdk/httpmw.Auth + typed accessors            |
 | §5  | `{error: {code: <service>.<x>, message, details?}}`               | sdk/httpmw.WriteError; forbidigo on encoder  |
 | §6  | Cursor default; offset admin-only                                 | sdk/httpmw/pagination + review               |
-| §7  | snake_case JSON, RFC3339 UTC                                      | review                                       |
+| §7  | camelCase JSON, RFC3339 UTC                                       | review                                       |
 | §8  | `/v1` URL versioning                                              | service-template                             |
 | §9  | `/healthz` + `/readyz` mandatory                                  | service-template + Helm probes               |

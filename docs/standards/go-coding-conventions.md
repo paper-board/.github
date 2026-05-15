@@ -520,7 +520,7 @@ func New(key string) *Client {
 
 Locked by ADR-0008: Conventional Commits + commitlint + release-please.
 
-```
+```text
 <type>(<scope>): <subject>
 
 [body]

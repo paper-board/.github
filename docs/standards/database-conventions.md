@@ -56,7 +56,7 @@ Static SELECT/INSERT/UPDATE/DELETE statements (no run-time WHERE composition) MU
 
 ### sqlc layout
 
-```
+```text
 internal/store/
 ├── store.go             # pool ownership, MustConnect, Close, WithTx wiring
 ├── agents.go            # raw-pgx methods for the agents aggregate (dynamic queries only)
@@ -292,7 +292,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 Locked from go-service-layout §1:
 
-```
+```text
 migrations/
 ├── embed.go            // go:embed schema/*.sql
 ├── schema/             # transactional migrations

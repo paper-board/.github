@@ -13,7 +13,7 @@ familiar with one service MUST be able to navigate any other in five minutes.
 
 Every service repo MUST have this top-level shape:
 
-```
+```text
 <service>/
 ├── cmd/                     # binaries (one subdir per binary)
 │   ├── server/main.go       # http/grpc server
@@ -93,7 +93,7 @@ single-rule schemes leak.
 
 The repo MUST ship `go-arch-lint.yaml` at root with these directed edges only:
 
-```
+```text
 internal/api      → internal/core
 internal/api      → internal/<adapter>          (only when transport-level wiring needs it)
 internal/store    → internal/core               (for domain types only)

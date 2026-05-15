@@ -197,7 +197,7 @@ Every service image MUST be pushed with three tags:
 
 Naming convention (ADR-0007 + CLAUDE.md): `ghcr.io/paper-board/<svc>-<binary>:<tag>`. Examples:
 
-```
+```text
 ghcr.io/paper-board/agents-server:v0.1.0
 ghcr.io/paper-board/agents-server:sha-7c1d4a2
 ghcr.io/paper-board/agents-server:latest
@@ -274,7 +274,7 @@ SCHEMA=${3:-$SVC}
 
 ### Bootstrap content
 
-```
+```text
 service-template/
 ├── cmd/
 │   ├── server/main.go              # six-phase wiring (coding §1)

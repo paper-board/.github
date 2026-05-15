@@ -133,7 +133,7 @@ development live in the roadmap, not here.
 
 - `internal/core` carries domain logic with no external deps; high coverage is cheap and prevents
   silent regressions.
-- `internal/api` mostly wires + DTO; 75% is enough.
+- `internal/api` mostly wires + DTO; 80% is the target.
 - `internal/store` SQL is verified by integration tests; coverage there is meaningful.
 - Adapters mock external services; over-testing the mock seam wastes effort.
 - `cmd/` is wiring; service E2E exercises it.
@@ -150,9 +150,9 @@ go test -coverprofile=cover.out ./internal/...
 go tool cover -func=cover.out > cover.txt
 
 declare -A targets=(
-  ["internal/api"]=50
-  ["internal/core"]=70
-  ["internal/store"]=60
+  ["internal/api"]=80
+  ["internal/core"]=90
+  ["internal/store"]=80
 )
 
 for pkg in "${!targets[@]}"; do
