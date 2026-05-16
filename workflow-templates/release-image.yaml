@@ -1,5 +1,5 @@
-# Reusable workflow: build + push + cosign + SBOM
-# Phase 1.5'te activate (cosign + Syft).
+# Reusable workflow: build + push + Trivy scan.
+# cosign + SBOM deferred to Phase 5 (see comment in `release` job).
 name: Release Image
 
 on:
@@ -18,7 +18,7 @@ on:
       GHCR_TOKEN:
         required: true
       COSIGN_KEY:
-        required: false  # Phase 1.5+
+        required: false  # Phase 5+ (consumed by deferred cosign sign step)
       COSIGN_PASSWORD:
         required: false
 
@@ -54,26 +54,19 @@ jobs:
             ghcr.io/paper-board/${{ inputs.image-name }}:${{ steps.version.outputs.tag }}
             ghcr.io/paper-board/${{ inputs.image-name }}:latest
 
-      - name: Install cosign
-        if: ${{ secrets.COSIGN_KEY != '' }}
-        uses: sigstore/cosign-installer@v3
-
-      - name: Sign image
-        if: ${{ secrets.COSIGN_KEY != '' }}
-        env:
-          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-        run: |
-          cosign sign --key env://COSIGN_KEY \
-            ghcr.io/paper-board/${{ inputs.image-name }}@${{ steps.docker.outputs.digest }}
-
-      - name: Generate SBOM
-        if: ${{ secrets.COSIGN_KEY != '' }}
-        uses: anchore/sbom-action@v0
-        with:
-          image: ghcr.io/paper-board/${{ inputs.image-name }}@${{ steps.docker.outputs.digest }}
-          format: spdx-json
-          artifact-name: sbom-${{ inputs.image-name }}.spdx.json
+      # Phase 5: cosign + SBOM (placeholder)
+      #
+      # When Phase 5 production cutover begins, these steps will be enabled:
+      #  - Install cosign
+      #  - Sign image (keyless OIDC or KMS-backed)
+      #  - Generate SBOM (syft) and attach
+      #
+      # Phase 5 open decisions:
+      #  - Keyless (Fulcio/Sigstore) vs KMS-backed
+      #  - SBOM format: SPDX vs CycloneDX
+      #  - Verification: Kyverno admission controller vs OPA Gatekeeper
+      #
+      # Tracking: paper-board/.github#<issue> (opened when Phase 5 scope materializes)
 
       - name: Trivy scan
         uses: aquasecurity/trivy-action@v0
