@@ -1,5 +1,5 @@
-# Reusable workflow: build + push + cosign + SBOM
-# Phase 1.5'te activate (cosign + Syft).
+# Reusable workflow: build + push + Trivy scan.
+# cosign + SBOM deferred to Phase 5 (see comment in `release` job).
 name: Release Image
 
 on:
@@ -18,7 +18,7 @@ on:
       GHCR_TOKEN:
         required: true
       COSIGN_KEY:
-        required: false  # Phase 1.5+
+        required: false  # Phase 5+ (consumed by deferred cosign sign step)
       COSIGN_PASSWORD:
         required: false
 
