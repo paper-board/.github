@@ -1,0 +1,12 @@
+paper-board/agents
+paper-board/identity
+paper-board/runtime
+paper-board/compute
+paper-board/sdk
+paper-board/proto
+paper-board/infra
+paper-board/platform
+paper-board/billing
+paper-board/gateway
+paper-board/frontend
+paper-board/cli
