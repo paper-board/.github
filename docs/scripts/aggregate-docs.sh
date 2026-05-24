@@ -14,7 +14,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPOS_FILE="${SCRIPT_DIR}/repos.txt"
-CONTENT_BASE="${DOCS_ROOT}/content/docs"
+CONTENT_BASE="${DOCS_ROOT}/src/content/docs"
 TMP_BASE="$(mktemp -d -t paperboard-aggregate-XXXXXX)"
 trap 'rm -rf "${TMP_BASE}"' EXIT
 
@@ -75,6 +75,7 @@ EOF
   rm -rf "${target}"
   mkdir -p "${target}"
   cp -R "${tmp}/docs/." "${target}/"
+  inject_frontmatter "${target}"
 }
 
 fetch_mirror() {
@@ -95,9 +96,55 @@ fetch_mirror() {
   # When running in the .github repo itself, source files are local.
   if [[ -d "${DOCS_ROOT}/../${source}" ]]; then
     cp -R "${DOCS_ROOT}/../${source}/." "${target}/"
+    inject_frontmatter "${target}"
   else
     log "  WARN: source not found at ../${source} — skipping"
   fi
+}
+
+# Inject minimal Starlight frontmatter into .md files that lack it or lack a
+# `title:` key. Title derives from the first `# Heading` line (basename as
+# fallback). Files whose existing frontmatter already declares `title:` are
+# left untouched; files with frontmatter but no title get the key spliced in
+# immediately after the opening `---`.
+inject_frontmatter() {
+  local dir="$1"
+  while IFS= read -r -d '' file; do
+    # Derive a title from the first `# Heading` line; basename fallback.
+    local title
+    title=$(awk '/^# / { sub(/^# /, ""); print; exit }' "${file}")
+    if [[ -z "${title}" ]]; then
+      title=$(basename "${file}" .md)
+    fi
+    title="${title//\"/\\\"}"
+
+    local first_line
+    IFS= read -r first_line < "${file}" || first_line=""
+
+    local tmp
+    tmp=$(mktemp)
+
+    if [[ "${first_line}" == "---" ]]; then
+      # File has YAML frontmatter — only inject title if absent.
+      if awk '/^---/{ if (++n == 2) exit } n==1 && /^[[:space:]]*title:/ { found=1 } END { exit found ? 0 : 1 }' "${file}"; then
+        # title present already — leave file untouched
+        rm -f "${tmp}"
+        continue
+      fi
+      # Insert `title: "<title>"` immediately after the opening `---`.
+      awk -v t="${title}" '
+        NR==1 && /^---/ { print; print "title: \"" t "\""; next }
+        { print }
+      ' "${file}" > "${tmp}"
+    else
+      # No frontmatter at all — prepend a minimal block.
+      {
+        printf -- '---\ntitle: "%s"\n---\n\n' "${title}"
+        cat "${file}"
+      } > "${tmp}"
+    fi
+    mv "${tmp}" "${file}"
+  done < <(find "${dir}" -type f -name '*.md' -print0)
 }
 
 main() {

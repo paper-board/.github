@@ -24,7 +24,7 @@ import { join } from 'path';
 
 const FALLBACK = join(process.cwd(), '..', '..', 'CONTEXT-MAP.md');
 const SOURCE = process.env.CONTEXT_MAP_PATH ?? FALLBACK;
-const OUT = join(process.cwd(), 'content', 'docs', 'onboarding', 'glossary.md');
+const OUT = join(process.cwd(), 'src', 'content', 'docs', 'onboarding', 'glossary.md');
 
 if (!existsSync(SOURCE)) {
   console.warn(`derive-glossary: source not found at ${SOURCE} — skipping (graceful). Static glossary unchanged.`);

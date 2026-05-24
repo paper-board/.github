@@ -66,7 +66,7 @@ jobs:
         # created yet (pre-S2/S3 bootstrap state). Top-level homepage was
         # CR-reviewed in S1 PR #18; no per-build re-validation needed.
         run: |
-          for dir in content/docs/onboarding content/docs/architecture content/docs/operations; do
+          for dir in src/content/docs/onboarding src/content/docs/architecture src/content/docs/operations; do
             if [[ -d "$dir" ]]; then
               ./scripts/validate-frontmatter.sh "$dir" || exit $?
             else
@@ -108,7 +108,7 @@ jobs:
         # Sibling repos cloned in the preceding step provide source files
         # for path resolution.
         run: |
-          for dir in content/docs/onboarding content/docs/architecture content/docs/operations; do
+          for dir in src/content/docs/onboarding src/content/docs/architecture src/content/docs/operations; do
             if [[ -d "$dir" ]]; then
               ./scripts/validate-code-snippets.sh "$dir" || exit $?
             else
