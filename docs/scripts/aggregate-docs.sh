@@ -102,10 +102,11 @@ fetch_mirror() {
   fi
 }
 
-# Inject minimal Starlight frontmatter into mirrored .md files that ship
-# without it. Title derives from the first `# Heading` line; description
-# fallback is empty. Files that already have a YAML frontmatter block
-# (file starts with `---`) are left untouched.
+# Inject minimal Starlight frontmatter into .md files that lack it or lack a
+# `title:` key. Title derives from the first `# Heading` line (basename as
+# fallback). Files whose existing frontmatter already declares `title:` are
+# left untouched; files with frontmatter but no title get the key spliced in
+# immediately after the opening `---`.
 inject_frontmatter() {
   local dir="$1"
   while IFS= read -r -d '' file; do
@@ -125,7 +126,7 @@ inject_frontmatter() {
 
     if [[ "${first_line}" == "---" ]]; then
       # File has YAML frontmatter — only inject title if absent.
-      if awk '/^---/{ if (++n == 2) exit } n==1 && /^title:/ { found=1 } END { exit found ? 0 : 1 }' "${file}"; then
+      if awk '/^---/{ if (++n == 2) exit } n==1 && /^[[:space:]]*title:/ { found=1 } END { exit found ? 0 : 1 }' "${file}"; then
         # title present already — leave file untouched
         rm -f "${tmp}"
         continue
