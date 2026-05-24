@@ -38,13 +38,9 @@ fetch_repo() {
     return 0
   fi
 
-  if ! gh_out=$(gh repo clone "${repo}" "${tmp}" -- --depth=1 --quiet 2>&1); then
-    log "  WARN: clone failed for ${repo}: ${gh_out} — skipping"
-    return 0
-  fi
-
-  if [[ ! -d "${tmp}/docs" ]]; then
-    log "  no docs/ folder in ${repo} — emitting placeholder"
+  emit_placeholder() {
+    local reason="$1"
+    log "  ${reason} — emitting placeholder for ${repo_base}"
     rm -rf "${target}"
     mkdir -p "${target}"
     cat > "${target}/index.md" <<EOF
@@ -60,6 +56,19 @@ updated: $(date -u +%Y-%m-%d)
 
 This service has not shipped yet. Documentation lands when the service is built. See the [roadmap](../../decisions/0015-mvp-launch-phase-rebalance.md) for the schedule.
 EOF
+  }
+
+  if ! gh_out=$(gh repo clone "${repo}" "${tmp}" -- --depth=1 --quiet 2>&1); then
+    # Repo may not exist yet (planned but not bootstrapped — e.g., platform,
+    # billing, gateway, frontend, cli before Phase 4-7 ship them). Emit a
+    # placeholder so the docs site sidebar still surfaces the section.
+    log "  WARN: clone failed for ${repo}: ${gh_out}"
+    emit_placeholder "clone-failed"
+    return 0
+  fi
+
+  if [[ ! -d "${tmp}/docs" ]]; then
+    emit_placeholder "no docs/ folder in ${repo}"
     return 0
   fi
 
