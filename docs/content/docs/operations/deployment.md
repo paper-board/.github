@@ -35,7 +35,7 @@ paper-board/infra/helm/agent-manager/
 Per-service charts are published as OCI artifacts and consumed as dependencies:
 
 ```yaml
-# from paper-board/infra/helm/agent-manager/Chart.yaml:27-35
+# from paper-board/infra/helm/agent-manager/Chart.yaml:27-34
 dependencies:
   - name: identity
     version: 0.2.1
