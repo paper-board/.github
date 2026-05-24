@@ -49,6 +49,14 @@ jobs:
         run: ./scripts/aggregate-docs.sh
         working-directory: docs
 
+      - name: Generate ADR index
+        run: node scripts/generate-adr-index.js
+        working-directory: docs
+
+      - name: Derive glossary
+        run: node scripts/derive-glossary.js
+        working-directory: docs
+
       - name: Validate frontmatter (controlled paths only)
         # Mirror sources (standards/, decisions/) and aggregated service docs
         # follow their own conventions or pre-existing schemas. Validator runs
