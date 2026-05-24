@@ -67,10 +67,38 @@ jobs:
           done
         working-directory: docs
 
+      - name: Clone sibling paper-board repos for snippet path resolution
+        env:
+          GITHUB_TOKEN: ${{ secrets.DOCS_DISPATCH_PAT }}
+        # validate-code-snippets.sh resolves "// from paper-board/<repo>/<path>"
+        # against <WORKDIR>/paper-board/<repo>/<path>. Default CI checkout
+        # only has .github at <workspace>; siblings must be cloned explicitly
+        # so the validator can read the referenced source files. Aggregator
+        # step above only clones docs/ to mktemp tmp dirs, not full repos.
+        run: |
+          WORKDIR="${{ github.workspace }}/.."
+          mkdir -p "${WORKDIR}/paper-board"
+          while IFS= read -r repo; do
+            [[ -z "${repo}" || "${repo}" =~ ^# ]] && continue
+            target="${WORKDIR}/${repo}"
+            if [[ -d "${target}/.git" ]]; then
+              echo "exists: ${repo}"
+              continue
+            fi
+            echo "clone: ${repo} -> ${target}"
+            mkdir -p "$(dirname "${target}")"
+            if ! gh_out=$(gh repo clone "${repo}" "${target}" -- --depth=1 --quiet 2>&1); then
+              echo "WARN: clone failed for ${repo}: ${gh_out}"
+              echo "    snippets referencing this repo will report MISSING_FILE"
+            fi
+          done < docs/scripts/repos.txt
+
       - name: Validate code snippets (controlled paths only)
         env:
           WORKDIR: ${{ github.workspace }}/..
         # Same scope + same conditional skip as frontmatter validation.
+        # Sibling repos cloned in the preceding step provide source files
+        # for path resolution.
         run: |
           for dir in content/docs/onboarding content/docs/architecture content/docs/operations; do
             if [[ -d "$dir" ]]; then
