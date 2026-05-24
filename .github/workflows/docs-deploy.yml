@@ -42,7 +42,7 @@ jobs:
 
       - name: Install yq
         run: |
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
       - name: Aggregate multi-repo docs
@@ -50,20 +50,31 @@ jobs:
         working-directory: docs
 
       - name: Validate frontmatter
-        run: ./scripts/validate-frontmatter.sh docs/content
+        run: ./scripts/validate-frontmatter.sh content
+        working-directory: docs
 
       - name: Validate code snippets
         env:
           WORKDIR: ${{ github.workspace }}/..
-        run: ./scripts/validate-code-snippets.sh docs/content
+        run: ./scripts/validate-code-snippets.sh content
+        working-directory: docs
 
       - name: Astro build
         run: npm run build
         working-directory: docs
+
+      - name: Resolve deploy branch
+        id: deploy-branch
+        run: |
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            echo "branch=${{ github.event.client_payload.branch || 'main' }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy docs/dist --project-name=paperboard-docs --branch=${{ github.event_name == 'push' && 'main' || github.ref_name }}
+          command: pages deploy docs/dist --project-name=paperboard-docs --branch=${{ steps.deploy-branch.outputs.branch }}

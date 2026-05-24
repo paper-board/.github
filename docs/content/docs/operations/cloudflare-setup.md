@@ -13,7 +13,7 @@ This page records the manual Cloudflare dashboard steps for the docs portal. Rep
 ## Pages project
 
 - Name: `paperboard-docs`
-- Source: `github.com/paper-board/.github` (branch `main`)
+- Source: `github.com/paper-board/.github` on GitHub (branch `main`)
 - Build command: `cd docs && npm run build`
 - Build output: `docs/dist`
 - Custom domain: `docs.paperboard.app`
@@ -54,10 +54,10 @@ This page records the manual Cloudflare dashboard steps for the docs portal. Rep
 
 ## Secrets
 
-| Secret                  | Scope      | Description                                              |
-| ----------------------- | ---------- | -------------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`  | org secret | Single permission: Account / Cloudflare Pages / Edit     |
-| `CLOUDFLARE_ACCOUNT_ID` | org secret | Cloudflare Account ID (dashboard → Account → Account ID) |
-| `DOCS_DISPATCH_PAT`     | org secret | Fine-grained PAT, repository_dispatch:write on .github   |
+| Secret                  | Scope      | Description                                                        |
+| ----------------------- | ---------- | ------------------------------------------------------------------ |
+| `CLOUDFLARE_API_TOKEN`  | org secret | Single permission: Account / Cloudflare Pages / Edit               |
+| `CLOUDFLARE_ACCOUNT_ID` | org secret | Cloudflare Account ID (dashboard → Account → Account ID)           |
+| `DOCS_DISPATCH_PAT`     | org secret | Fine-grained PAT, repository_dispatch:write on paper-board/.github |
 
 `CLOUDFLARE_ACCESS_AUD` is deferred to Phase 5+ (Access JWT verification for API endpoints behind the SSO gate).

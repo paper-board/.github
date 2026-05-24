@@ -38,8 +38,8 @@ fetch_repo() {
     return 0
   fi
 
-  if ! gh repo clone "${repo}" "${tmp}" -- --depth=1 --quiet 2>/dev/null; then
-    log "  WARN: clone failed for ${repo} — skipping"
+  if ! gh_out=$(gh repo clone "${repo}" "${tmp}" -- --depth=1 --quiet 2>&1); then
+    log "  WARN: clone failed for ${repo}: ${gh_out} — skipping"
     return 0
   fi
 
