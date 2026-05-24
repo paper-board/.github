@@ -14,6 +14,12 @@ export default defineConfig({
         tr: { label: 'Türkçe', lang: 'tr' },
       },
       pagefind: true,
+      head: [
+        {
+          tag: 'script',
+          attrs: { type: 'module', src: '/mermaid-init.js', defer: true },
+        },
+      ],
       components: {
         PageFrame: './src/components/FallbackBanner.astro',
       },
