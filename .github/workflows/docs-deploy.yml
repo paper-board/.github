@@ -35,17 +35,17 @@ jobs:
         run: npm ci
         working-directory: docs
 
-      - name: Setup gh CLI auth
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "${GITHUB_TOKEN}" | gh auth login --with-token
-
       - name: Install yq
         run: |
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
       - name: Aggregate multi-repo docs
+        env:
+          # gh CLI auto-reads GITHUB_TOKEN env var; cross-repo clone access
+          # requires DOCS_DISPATCH_PAT (default GITHUB_TOKEN is scoped to .github
+          # repo only and cannot clone sibling paper-board service repos).
+          GITHUB_TOKEN: ${{ secrets.DOCS_DISPATCH_PAT }}
         run: ./scripts/aggregate-docs.sh
         working-directory: docs
 
