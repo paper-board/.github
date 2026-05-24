@@ -61,13 +61,14 @@ const adrs = files.map(file => {
 
   const adr_number = fm?.adr_number ?? filenameToNumber(file);
   const title      = fm?.title ?? extractTitle(raw, file);
-  const status     = fm?.status ?? extractBoldField(raw, 'Status') ?? 'accepted';
+  const rawStatus  = fm?.status ?? extractBoldField(raw, 'Status') ?? 'accepted';
+  const status     = String(rawStatus).trim().toLowerCase() || 'accepted';
   const date       = fm?.date ?? extractBoldField(raw, 'Date') ?? '';
   const scope      = fm?.scope ?? extractBoldField(raw, 'Scope') ?? 'system';
   const supersedes = fm?.supersedes ?? [];
   const superseded_by = fm?.superseded_by ?? extractBoldField(raw, 'Superseded by') ?? null;
 
-  return { file, adr_number: String(adr_number), title, status: status.toLowerCase(), date, scope, supersedes, superseded_by };
+  return { file, adr_number: String(adr_number), title, status, date, scope, supersedes, superseded_by };
 });
 
 const KNOWN_STATUSES = ['accepted', 'proposed', 'superseded', 'deprecated'];
