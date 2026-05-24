@@ -15,7 +15,11 @@ const banner = {
     <strong>i18n fallback:</strong> {banner[requestedLocale] ?? `Page not available in ${requestedLocale}, showing default.`}
   </div>
 )}
-<Default><slot /></Default>
+<Default {...Astro.props}>
+  <slot name="header" slot="header" />
+  <slot name="sidebar" slot="sidebar" />
+  <slot />
+</Default>
 
 <style>
   .fallback-banner {
