@@ -66,12 +66,6 @@ sequenceDiagram
   participant Compute as compute :50054
   participant Anthropic as Anthropic API
 
-  classDef controlPlane fill:#10b981,stroke:#047857,color:#fff
-  classDef dataPlane fill:#3b82f6,stroke:#1d4ed8,color:#fff
-  classDef sandbox fill:#f97316,stroke:#c2410c,color:#fff
-  classDef external fill:#ef4444,stroke:#b91c1c,color:#fff
-  classDef persistence fill:#6b7280,stroke:#374151,color:#fff
-
   Client->>Agents: POST /v1/agents/{id}/messages<br/>Authorization: Bearer <JWT>
   Agents->>Identity: gRPC AuthService.VerifyToken<br/>→ {user_id, org_id, roles}
   Identity-->>Agents: claims

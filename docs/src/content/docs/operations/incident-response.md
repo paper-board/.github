@@ -36,11 +36,6 @@ stateDiagram-v2
   Resolved --> Postmortem: SEV-1 / SEV-2 mandatory; SEV-3 optional
   Postmortem --> [*]: action items filed in Jira
 
-  classDef controlPlane fill:#10b981,stroke:#047857,color:#fff
-  classDef dataPlane fill:#3b82f6,stroke:#1d4ed8,color:#fff
-  classDef sandbox fill:#f97316,stroke:#c2410c,color:#fff
-  classDef external fill:#ef4444,stroke:#b91c1c,color:#fff
-  classDef persistence fill:#6b7280,stroke:#374151,color:#fff
 ```
 
 ## On-call rotation

@@ -79,12 +79,6 @@ sequenceDiagram
   participant CR as CodeRabbit
   participant User as Maintainer
 
-  classDef controlPlane fill:#10b981,stroke:#047857,color:#fff
-  classDef dataPlane fill:#3b82f6,stroke:#1d4ed8,color:#fff
-  classDef sandbox fill:#f97316,stroke:#c2410c,color:#fff
-  classDef external fill:#ef4444,stroke:#b91c1c,color:#fff
-  classDef persistence fill:#6b7280,stroke:#374151,color:#fff
-
   Dev->>CI: git push → PR opened
   CI->>CI: lint + test + build
   CI-->>Dev: checks settle (green or red)

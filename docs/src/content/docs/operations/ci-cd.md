@@ -78,15 +78,6 @@ sequenceDiagram
   GH->>DR: docker-publish.yml — build + push 3 tags
   GH->>HC: helm-publish.yml — lint + push chart OCI
 
-  classDef controlPlane fill:#10b981,stroke:#047857,color:#fff
-  classDef dataPlane fill:#3b82f6,stroke:#1d4ed8,color:#fff
-  classDef sandbox fill:#f97316,stroke:#c2410c,color:#fff
-  classDef external fill:#ef4444,stroke:#b91c1c,color:#fff
-  classDef persistence fill:#6b7280,stroke:#374151,color:#fff
-
-  class Dev dataPlane
-  class GH,RP controlPlane
-  class DR,HC persistence
 ```
 
 release-please reads commit history since the last tag, computes the next SemVer, and writes
