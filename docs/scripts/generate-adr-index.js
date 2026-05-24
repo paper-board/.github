@@ -22,7 +22,7 @@ try {
   // yaml package not available; YAML frontmatter path will be skipped
 }
 
-const DECISIONS = join(process.cwd(), 'content', 'docs', 'decisions');
+const DECISIONS = join(process.cwd(), 'src', 'content', 'docs', 'decisions');
 
 if (!existsSync(DECISIONS)) {
   console.error(`generate-adr-index: ${DECISIONS} not found — run aggregate-docs.sh first`);
