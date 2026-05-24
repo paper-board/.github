@@ -129,12 +129,6 @@ sequenceDiagram
   participant PVC as workspace PVC
   participant S3 as S3
 
-  classDef controlPlane fill:#10b981,stroke:#047857,color:#fff
-  classDef dataPlane fill:#3b82f6,stroke:#1d4ed8,color:#fff
-  classDef sandbox fill:#f97316,stroke:#c2410c,color:#fff
-  classDef external fill:#ef4444,stroke:#b91c1c,color:#fff
-  classDef persistence fill:#6b7280,stroke:#374151,color:#fff
-
   Agents->>Runtime: RuntimeService.Dispatch(session_id, prompt)
   Runtime->>Compute: ComputeService.CreateSandbox(org_id, session_id)
   Compute->>PVC: mount workspace PVC (restore from S3 if exists)

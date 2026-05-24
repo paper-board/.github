@@ -47,12 +47,6 @@ sequenceDiagram
   participant PG as Postgres
   participant Svc as Services
 
-  classDef controlPlane fill:#10b981,stroke:#047857,color:#fff
-  classDef dataPlane fill:#3b82f6,stroke:#1d4ed8,color:#fff
-  classDef sandbox fill:#f97316,stroke:#c2410c,color:#fff
-  classDef external fill:#ef4444,stroke:#b91c1c,color:#fff
-  classDef persistence fill:#6b7280,stroke:#374151,color:#fff
-
   Dev->>Kind: kind create cluster --name paperboard
   Dev->>Kind: kubectl apply -f infra/local/namespace.yaml
   Dev->>PG: helm install postgres bitnami/postgresql
