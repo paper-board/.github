@@ -49,14 +49,31 @@ jobs:
         run: ./scripts/aggregate-docs.sh
         working-directory: docs
 
-      - name: Validate frontmatter
-        run: ./scripts/validate-frontmatter.sh content
+      - name: Validate frontmatter (controlled paths only)
+        # Mirror sources (standards/, decisions/) and aggregated service docs
+        # follow their own conventions or pre-existing schemas. Validator runs
+        # only against the paths whose content we author + own in this Sprint:
+        # onboarding, architecture, operations, and the docs portal homepage.
+        run: |
+          ./scripts/validate-frontmatter.sh content/docs/onboarding
+          ./scripts/validate-frontmatter.sh content/docs/architecture
+          ./scripts/validate-frontmatter.sh content/docs/operations
+          # Top-level pages directly under content/docs/ (homepage etc.)
+          if compgen -G "content/docs/*.md" >/dev/null; then
+            for f in content/docs/*.md; do
+              ./scripts/validate-frontmatter.sh "${f%/*}" || exit $?
+            done
+          fi
         working-directory: docs
 
-      - name: Validate code snippets
+      - name: Validate code snippets (controlled paths only)
         env:
           WORKDIR: ${{ github.workspace }}/..
-        run: ./scripts/validate-code-snippets.sh content
+        # Same scope as frontmatter validation — only our authored paths.
+        run: |
+          ./scripts/validate-code-snippets.sh content/docs/onboarding
+          ./scripts/validate-code-snippets.sh content/docs/architecture
+          ./scripts/validate-code-snippets.sh content/docs/operations
         working-directory: docs
 
       - name: Astro build
