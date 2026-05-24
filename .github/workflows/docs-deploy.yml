@@ -58,10 +58,13 @@ jobs:
           ./scripts/validate-frontmatter.sh content/docs/onboarding
           ./scripts/validate-frontmatter.sh content/docs/architecture
           ./scripts/validate-frontmatter.sh content/docs/operations
-          # Top-level pages directly under content/docs/ (homepage etc.)
+          # Top-level pages directly under content/docs/ (homepage etc.).
+          # Pass each .md path directly — validator's find runs on a single
+          # file and validates only that file. Earlier "${f%/*}" expansion
+          # bug recursed the whole tree (CR finding PR #20 round 1).
           if compgen -G "content/docs/*.md" >/dev/null; then
             for f in content/docs/*.md; do
-              ./scripts/validate-frontmatter.sh "${f%/*}" || exit $?
+              ./scripts/validate-frontmatter.sh "$f" || exit $?
             done
           fi
         working-directory: docs
