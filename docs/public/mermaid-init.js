@@ -11,7 +11,7 @@
 // Mermaid wants <div class="mermaid">graph source</div>. This script extracts
 // the line text (joined with \n) and replaces each <pre> with a mermaid div.
 
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs';
 
 const THEME = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
 mermaid.initialize({ startOnLoad: false, theme: THEME, securityLevel: 'strict' });
