@@ -1,0 +1,9 @@
+:root {
+  --paperboard-control-plane: #10b981;
+  --paperboard-data-plane: #3b82f6;
+  --paperboard-sandbox: #f97316;
+  --paperboard-external: #ef4444;
+  --paperboard-persistence: #6b7280;
+}
+
+.mermaid { background: transparent; }

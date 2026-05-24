@@ -1,0 +1,29 @@
+---
+import Default from '@astrojs/starlight/components/PageFrame.astro';
+
+const requestedLocale = Astro.params.lang ?? 'en';
+const servedLocale = Astro.currentLocale?.lang ?? 'en';
+const isFallback = requestedLocale !== servedLocale;
+
+const banner = {
+  tr: 'This page is not yet translated to Turkish. Showing the English version below.',
+};
+---
+
+{isFallback && (
+  <div class="fallback-banner" role="alert">
+    <strong>i18n fallback:</strong> {banner[requestedLocale] ?? `Page not available in ${requestedLocale}, showing default.`}
+  </div>
+)}
+<Default><slot /></Default>
+
+<style>
+  .fallback-banner {
+    background: #fef3c7;
+    color: #78350f;
+    border-left: 4px solid #f59e0b;
+    padding: 0.75rem 1rem;
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+  }
+</style>
