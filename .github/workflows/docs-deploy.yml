@@ -20,12 +20,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout .github repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: docs/.nvmrc
           cache: npm
