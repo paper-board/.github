@@ -45,17 +45,20 @@ Every commit message must follow [Conventional Commits](https://www.conventional
 [optional footer: Co-Authored-By, Closes #N]
 ```
 
-The `commitlint` pre-commit hook rejects messages that do not conform. Common types:
+The `commitlint` pre-commit hook AND the `ci / pr-title` GitHub Action both enforce one of these types in every commit subject / PR title:
 
-| Type       | When to use                              |
-| ---------- | ---------------------------------------- |
-| `feat`     | New feature or behavior                  |
-| `fix`      | Bug fix                                  |
-| `chore`    | Maintenance (deps, config, CI)           |
-| `docs`     | Documentation only                       |
-| `refactor` | Code restructure with no behavior change |
-| `test`     | Test additions or changes                |
-| `perf`     | Performance improvement                  |
+| Type       | When to use                              | CHANGELOG (release-please) |
+| ---------- | ---------------------------------------- | -------------------------- |
+| `feat`     | New feature or behavior                  | Features                   |
+| `fix`      | Bug fix                                  | Bug Fixes                  |
+| `perf`     | Performance improvement                  | Performance Improvements   |
+| `revert`   | Revert of a previous commit              | Reverts                    |
+| `refactor` | Code restructure with no behavior change | (no entry)                 |
+| `test`     | Test additions or changes                | (no entry)                 |
+| `docs`     | Documentation only                       | (no entry)                 |
+| `chore`    | Maintenance (deps, generated files)      | (no entry)                 |
+| `ci`       | CI configuration                         | (no entry)                 |
+| `build`    | Build system, package metadata           | (no entry)                 |
 
 Breaking changes: add `!` after the type (`feat!:`) and include a `BREAKING CHANGE:` footer.
 
