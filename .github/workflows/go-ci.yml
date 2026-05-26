@@ -51,6 +51,35 @@ on:
         default: "v1.31.1"
 
 jobs:
+  pr-title:
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@e32d7e603df1aa1ba07e981f2a23455dee596825  # v5.x — SHA-pinned for supply-chain hygiene; bump via Dependabot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            perf
+            revert
+            refactor
+            test
+            docs
+            chore
+            ci
+            build
+          requireScope: false
+          subjectPattern: ^.+ \(PB-\d+\)$
+          subjectPatternError: |
+            PR title subject must end with "(PB-N)" where N is the Jira issue number.
+            Example: "feat(agents): add session memory api (PB-72)"
+          validateSingleCommit: false
+          headerPatternCorrespondence: type, scope, subject
+
   lint:
     runs-on: ubuntu-latest
     steps:

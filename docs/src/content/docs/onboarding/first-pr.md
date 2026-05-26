@@ -45,29 +45,38 @@ Every commit message must follow [Conventional Commits](https://www.conventional
 [optional footer: Co-Authored-By, Closes #N]
 ```
 
-The `commitlint` pre-commit hook rejects messages that do not conform. Common types:
+The `commitlint` pre-commit hook AND the `ci / pr-title` GitHub Action both enforce one of these types in every commit subject / PR title:
 
-| Type       | When to use                              |
-| ---------- | ---------------------------------------- |
-| `feat`     | New feature or behavior                  |
-| `fix`      | Bug fix                                  |
-| `chore`    | Maintenance (deps, config, CI)           |
-| `docs`     | Documentation only                       |
-| `refactor` | Code restructure with no behavior change |
-| `test`     | Test additions or changes                |
-| `perf`     | Performance improvement                  |
+| Type       | When to use                              | CHANGELOG (release-please) |
+| ---------- | ---------------------------------------- | -------------------------- |
+| `feat`     | New feature or behavior                  | Features                   |
+| `fix`      | Bug fix                                  | Bug Fixes                  |
+| `perf`     | Performance improvement                  | Performance Improvements   |
+| `revert`   | Revert of a previous commit              | Reverts                    |
+| `refactor` | Code restructure with no behavior change | (no entry)                 |
+| `test`     | Test additions or changes                | (no entry)                 |
+| `docs`     | Documentation only                       | (no entry)                 |
+| `chore`    | Maintenance (deps, generated files)      | (no entry)                 |
+| `ci`       | CI configuration                         | (no entry)                 |
+| `build`    | Build system, package metadata           | (no entry)                 |
 
 Breaking changes: add `!` after the type (`feat!:`) and include a `BREAKING CHANGE:` footer.
 
 ## Opening a PR
 
+PR titles must follow the hybrid Conventional Commits + Jira format `<type>(<scope>)<!?>: <description> (PB-N)` enforced by the `ci / pr-title` GitHub Action. The `(PB-N)` suffix is required; PRs without it fail CI and cannot merge.
+
 ```sh
-gh pr create --title "feat(agents): add session timeout" \
-  --body "Closes #42\n\nAdds configurable idle timeout to agent sessions."
+gh pr create --title "feat(agents): add session timeout (PB-42)" \
+  --body "$(cat <<'EOF'
+Adds configurable idle timeout to agent sessions.
+
+Closes PB-42
+EOF
+)"
 ```
 
-Reference the Jira Story key or GitHub issue in the body. The `Closes #N` token auto-links
-the PR to the issue and transitions the Jira Story to In Review when the PR opens.
+The `Closes PB-42` trailer in the body is parsed by Atlassian Smart Commits and auto-transitions the Jira Story to Done when the PR is merged.
 
 ## The review loop
 
