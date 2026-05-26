@@ -52,7 +52,13 @@ on:
 
 jobs:
   pr-title:
-    if: github.event_name == 'pull_request'
+    # Skip on bot-authored PRs (release-please, dependabot, renovate) — their PR titles
+    # follow tool-specific conventions, not the hybrid `(PB-N)` format.
+    if: |
+      github.event_name == 'pull_request' &&
+      !startsWith(github.head_ref, 'release-please--') &&
+      !startsWith(github.head_ref, 'dependabot/') &&
+      !startsWith(github.head_ref, 'renovate/')
     permissions:
       pull-requests: read
     runs-on: ubuntu-latest
