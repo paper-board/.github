@@ -38,10 +38,12 @@ flowchart TD
 ## A
 
 **Advisory lock** — a PostgreSQL session-level lock acquired by the migrator before applying
-migrations (`pg_advisory_lock(id)`). Because PgBouncer in transaction-pool mode releases
-session state between statements, advisory locks require a direct Postgres connection
-(`MIGRATION_DB_URL`, port 5432). Lock IDs per service: identity=1, billing=2, agents=3,
-platform=4. Parallel migration of different services is safe because they hold different IDs.
+migrations. Because PgBouncer in transaction-pool mode releases session state between
+statements, advisory locks require a direct Postgres connection (`MIGRATION_DB_URL`,
+port 5432). `paper-board/sdk/migrator` delegates to golang-migrate's pgx/v5 driver, which
+derives the lock id automatically as `CRC32(database+schema)`. Schema-per-service (ADR-0002)
+guarantees hash isolation across services, so two services can run their migrators in
+parallel without coordination — no manual lock-id numbering needed.
 
 **Agent** — the core product entity. An agent definition (stored in the `agents` schema)
 describes a name, system prompt, tool configuration, and LLM model. Agents are versioned;
@@ -55,6 +57,11 @@ service writes artifact metadata back to `agents` via gRPC after each execution.
 **Astro Starlight** — the static-site generator used for this documentation portal. Renders
 Markdown + Mermaid diagrams and produces a Pagefind search index. Deployed to Cloudflare
 Pages.
+
+**Audit service** (`paper-board/audit`) — the centralized audit-event log. Other services
+emit events via gRPC; audit persists them with retention rules and exposes a query API.
+Phase 7+ adds hash-chain integrity. Schema: `audit`. Avoid: "log-service" as a synonym
+(audit's contract is structured events + retention, not free-text log lines).
 
 ## B
 
@@ -83,8 +90,10 @@ paper-board service repo. Format: `<type>(<scope>): <description>`. Breaking cha
 `feat!:` with a `BREAKING CHANGE:` footer. See [First PR](./first-pr.md).
 
 **Control plane** — services that own configuration, identity, billing state, and
-orchestration: `identity`, `platform`, `billing`, `gateway`. Represented in diagrams with
-green (`#10b981`).
+orchestration. Phase 4 set: `identity`, `audit`, `metering`, `notifications`, `onboarding`,
+`environments`, `vaults`. Planned additions: `billing` (Phase 6), `gateway` (Phase 8). The
+deprecated `platform` term referred to a now-split bundle (see "Platform service" entry).
+Represented in diagrams with green (`#10b981`).
 
 ## D
 
@@ -97,6 +106,17 @@ pool mode). Used by service runtime processes. Never use `DATABASE_URL` in the m
 advisory locks do not survive transaction-pool boundary crossings.
 
 ## E
+
+**Environment (config object)** — a domain object owned by the `environments` service that
+captures container configuration: packages, networking rules, and non-sensitive
+`KEY=VALUE` env vars. Each agent session reads exactly one `environment_id`. Modeled on
+Anthropic's Managed Agents Environment pattern. **Not** the same as an environment variable
+(those live inside an Environment) and **not** the same as a deployment environment
+(`dev`/`staging`/`prod`).
+
+**Environments service** (`paper-board/environments`) — the service that owns
+`Environment` domain objects. Phase 4. REST + gRPC. Schema: `environments`. Pairs with
+[Vault](#v) for the encrypted-credentials half of session config.
 
 **Exec-server** — the binary inside the `compute` pod that receives `ExecCommand` gRPC
 calls and runs them inside the gVisor sandbox. Exposes a single gRPC service
@@ -147,10 +167,14 @@ services receive the decoded claims via gRPC metadata headers (`x-user-id`, `x-o
 ## M
 
 **Metering** — the process of recording usage events (pod-seconds, tool-call counts,
-workspace-minutes, network egress) emitted by `compute` and consumed by `platform`
-(Phase 4+) and then by the billing engine (Phase 5+). Metering is Phase 3 scope because
-retroactive measurement is impossible — events must be emitted from Day 1 or revenue is
-lost.
+workspace-minutes, network egress) emitted by `compute` and rolled up by the `metering`
+service (Phase 4+) into hourly / daily / monthly counters per `(org, sku)`. The `billing`
+engine reads those rollups starting Phase 6. Metering is Phase 3 scope because retroactive
+measurement is impossible — events must be emitted from Day 1 or revenue is lost.
+
+**Metering service** (`paper-board/metering`) — the service that consumes raw usage events
+and produces invoice-grade rollups. Phase 4. gRPC. Schema: `metering`. Avoid: "billing"
+as a synonym (billing reads metering's rollups; the two are separate services).
 
 **MIGRATION_DB_URL** — the connection string pointing to Postgres directly on port 5432
 (not PgBouncer). Used exclusively by the migrator binary. Required for advisory locks.
@@ -165,10 +189,24 @@ sub-package alongside the production implementation (e.g. `internal/llm/{anthrop
 This keeps the adapter-deletion smoke test always-on: `make test-mock-only` swaps every
 adapter to `mock` and asserts no non-mock impl is reached at runtime.
 
-**mTLS** — mutual TLS between services. Activated in Phase 5 via cert-manager. Phases 1–4
-use NetworkPolicy default-deny instead.
+**mTLS** — mutual TLS between services. Activated in Phase 7 via cert-manager (per ADR-0015
+post-rebalance). Phases 1–6 use NetworkPolicy default-deny instead.
+
+## N
+
+**Notifications service** (`paper-board/notifications`) — the outbound notification gateway.
+Phase 4 ships e-mail (SMTP-backed); in-app + push channels land in Phase 6+. Other services
+emit `notification.requested` events via the outbox; notifications routes them by user
+preferences. Schema: `notifications`. Avoid: "email-service" as a synonym (the contract
+is channel-agnostic; email is one transport).
 
 ## O
+
+**Onboarding service** (`paper-board/onboarding`) — the cross-service orchestrator that
+consumes `identity.user.created` outbox events and seeds the new user with a default
+organization, a sample "Coding Assistant" agent, and a starter [Environment](#e) +
+[Vault](#v). Idempotent and replayable. Phase 4. Schema: `onboarding`. Avoid: "user-service"
+as a synonym (user/org CRUD lives in `identity`; onboarding is the choreographer).
 
 **Organization (org, tenant)** — the top-level billing and isolation unit. Every agent,
 session, and workspace belongs to an org. "Tenant" and "org" are synonyms in paperboard;
@@ -201,10 +239,12 @@ must never connect via PgBouncer because advisory locks require session-mode con
 demoable increment. Phases are numbered 1.0 through 10; ordering is set by ADR-0015. From
 Phase 4, each phase is a sellable milestone.
 
-**Platform service** (`paper-board/platform`) — owns cross-cutting concerns: audit log,
-incidents, notifications, webhooks, exports, and onboarding events. Schema: `platform`.
-Avoid: "notification-service" or "audit-service" as separate concepts — these are cohesive
-in one context by design.
+**Platform service** — **deprecated term.** The original Phase-4 plan bundled audit +
+metering + notifications + onboarding into a single `paper-board/platform` service. The D5a
+decision (2026-05-25; see [ADR-0016](../decisions/0016-phase-4-mvp0-substrate-resequence.md))
+split it into four independent services. The `platform` repo was never bootstrapped. Use
+`audit` / `metering` / `notifications` / `onboarding` explicitly; do not reintroduce the
+"platform" label in new code or docs.
 
 **PoLP (Principle of Least Privilege)** — each service's database user (`agents_app`,
 `identity_app`, etc.) has USAGE on its own schema only and ALL PRIVILEGES on its own tables.
@@ -276,13 +316,27 @@ paper-board code.
 
 **Usage event** — a structured record emitted by `compute` for each billable unit: one event
 per pod-second, per tool-call, per workspace-minute, per network-egress byte. Events are
-written to an outbox interface in Phase 3; `platform` consumes the outbox in Phase 4; the
-billing engine reads aggregated counters in Phase 5.
+written to an outbox interface in Phase 3; `metering` consumes the outbox in Phase 4 and
+produces hourly / daily / monthly rollups; the billing engine reads those aggregated
+counters starting Phase 6.
 
 **UUID-by-reference column** — a `uuid` column in one service's schema that stores the ID
 of an entity owned by another service's schema, without a foreign-key constraint
 (ADR-0003). Validation is application-level (a gRPC call to the owning service). The UUID
 version (v4 vs v7) follows the source entity, not the storing table.
+
+## V
+
+**Vault (domain object)** — an encrypted credentials store entry owned by the `vaults`
+service. Holds Anthropic API keys, future LLM provider keys, and OAuth tokens. Modeled on
+Anthropic's Managed Agents Vault pattern. Secrets are envelope-encrypted with GCP KMS;
+the raw plaintext never leaves the `vaults` service. Sessions reference vault entries by
+`vault_id`. Pairs with [Environment](#e) — non-sensitive config in Environment, sensitive
+credentials in Vault.
+
+**Vaults service** (`paper-board/vaults`) — the service that owns Vault entries.
+Phase 4. REST + gRPC. Schema: `vaults`. Encryption: GCP KMS envelope. Avoid: "secrets-service"
+as a synonym in code (the domain word is `vault`).
 
 ## W
 
