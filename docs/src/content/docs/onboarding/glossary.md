@@ -90,8 +90,10 @@ paper-board service repo. Format: `<type>(<scope>): <description>`. Breaking cha
 `feat!:` with a `BREAKING CHANGE:` footer. See [First PR](./first-pr.md).
 
 **Control plane** — services that own configuration, identity, billing state, and
-orchestration: `identity`, `platform`, `billing`, `gateway`. Represented in diagrams with
-green (`#10b981`).
+orchestration. Phase 4 set: `identity`, `audit`, `metering`, `notifications`, `onboarding`,
+`environments`, `vaults`. Planned additions: `billing` (Phase 6), `gateway` (Phase 8). The
+deprecated `platform` term referred to a now-split bundle (see "Platform service" entry).
+Represented in diagrams with green (`#10b981`).
 
 ## D
 
@@ -314,8 +316,9 @@ paper-board code.
 
 **Usage event** — a structured record emitted by `compute` for each billable unit: one event
 per pod-second, per tool-call, per workspace-minute, per network-egress byte. Events are
-written to an outbox interface in Phase 3; `platform` consumes the outbox in Phase 4; the
-billing engine reads aggregated counters in Phase 5.
+written to an outbox interface in Phase 3; `metering` consumes the outbox in Phase 4 and
+produces hourly / daily / monthly rollups; the billing engine reads those aggregated
+counters starting Phase 6.
 
 **UUID-by-reference column** — a `uuid` column in one service's schema that stores the ID
 of an entity owned by another service's schema, without a foreign-key constraint

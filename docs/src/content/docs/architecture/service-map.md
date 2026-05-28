@@ -23,7 +23,7 @@ flowchart LR
   end
 
   subgraph phase4["Phase 4 (bootstraps merged 2026-05-27; Wave 4 e2e integration in flight)"]
-    audit["audit<br/>:8084 HTTP<br/>:50054 gRPC<br/>schema: audit"]
+    audit["audit<br/>:8084 HTTP<br/>:50057 gRPC<br/>schema: audit"]
     metering["metering<br/>:50055 gRPC<br/>schema: metering"]
     notifications["notifications<br/>:8085 HTTP<br/>:8086 gRPC<br/>schema: notifications"]
     onboarding["onboarding<br/>:8089 HTTP<br/>:8090 gRPC<br/>schema: onboarding"]
@@ -53,7 +53,7 @@ flowchart LR
 | `paper-board/identity`      | 8081      | 50052     | `identity`      | 2     | shipped           |
 | `paper-board/runtime`       | —         | 50053     | none            | 3     | shipped           |
 | `paper-board/compute`       | —         | 50054     | none            | 3     | shipped           |
-| `paper-board/audit`         | 8084      | 50054     | `audit`         | 4     | merged 2026-05-27 |
+| `paper-board/audit`         | 8084      | 50057     | `audit`         | 4     | merged 2026-05-27 |
 | `paper-board/metering`      | —         | 50055     | `metering`      | 4     | merged 2026-05-27 |
 | `paper-board/notifications` | 8085      | 8086      | `notifications` | 4     | merged 2026-05-27 |
 | `paper-board/onboarding`    | 8089      | 8090      | `onboarding`    | 4     | merged 2026-05-27 |
@@ -63,6 +63,8 @@ flowchart LR
 | `paper-board/gateway`       | 443       | —         | none            | 8     | planned           |
 
 > **Note on Phase-4 default port collisions.** Some Phase-4 services share default ports (`environments` HTTP 8086 vs `notifications` gRPC 8086; `onboarding` HTTP 8089 vs `vaults` HTTP 8089). In Kubernetes this is benign — each service binds inside its own pod and is reached by Service DNS — but in single-host local dev two services on the same default port will collide. Override with `SERVER_PORT` / `GRPC_PORT` env vars when running multiple services side-by-side.
+>
+> **Note on audit gRPC port (50057).** The table publishes audit on gRPC `50057` to avoid the documented collision with `compute` gRPC `50054`. The audit service's `internal/config/config.go` currently defaults to `GRPC_PORT=50054`; a follow-up per-service PR will bump that default to `50057` so the runtime config matches this Service-level port. Until that lands, deployments must set `GRPC_PORT=50057` explicitly in the audit Helm values.
 
 ### agents (Phase 1.1)
 
@@ -237,7 +239,7 @@ Examples:
 - `identity.paper-board.svc.cluster.local:50052`
 - `agents.paper-board.svc.cluster.local:50051`
 - `compute.paper-board.svc.cluster.local:50054`
-- `audit.paper-board.svc.cluster.local:50054`
+- `audit.paper-board.svc.cluster.local:50057`
 - `metering.paper-board.svc.cluster.local:50055`
 - `vaults.paper-board.svc.cluster.local:50089`
 

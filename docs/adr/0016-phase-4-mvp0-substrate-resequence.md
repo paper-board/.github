@@ -50,16 +50,18 @@ ADR-0016 supersedes ADR-0015's Phase 4 scope row and downstream phase numbering.
 
 **New services bootstrap (6 + 1 cli + 1 e2e):**
 
-| Repo                        | Schema          | Advisory lock | Sorumluluk                                                                |
-| --------------------------- | --------------- | ------------- | ------------------------------------------------------------------------- |
-| `paper-board/audit`         | `audit`         | 4             | gRPC ingest + query API; centralized event log; 90-day hot retention      |
-| `paper-board/metering`      | `metering`      | 5             | Streaming hourly + cron daily/monthly + reconciler; invoice basis         |
-| `paper-board/notifications` | `notifications` | 6             | Outbound notification gateway; Phase 4 = e-mail only; outbox cascade      |
-| `paper-board/onboarding`    | `onboarding`    | 7             | Cross-service orchestrator + DLQ + status API                             |
-| `paper-board/environments`  | `environments`  | 8             | Anthropic-style container config + non-sensitive env vars                 |
-| `paper-board/vaults`        | `vaults`        | 9             | Anthropic-style encrypted credentials store; GCP KMS envelope             |
-| `paper-board/cli`           | (none)          | —             | ops tooling (`dlq` + `rollup` + `reconcile`); invoice DEFERRED to Phase 6 |
-| `paper-board/e2e`           | (none)          | —             | testcontainers flows/ + kind cluster/; neutral ownership (D13)            |
+| Repo                        | Schema          | Advisory lock <sup>†</sup> | Sorumluluk                                                                |
+| --------------------------- | --------------- | -------------------------- | ------------------------------------------------------------------------- |
+| `paper-board/audit`         | `audit`         | 4                          | gRPC ingest + query API; centralized event log; 90-day hot retention      |
+| `paper-board/metering`      | `metering`      | 5                          | Streaming hourly + cron daily/monthly + reconciler; invoice basis         |
+| `paper-board/notifications` | `notifications` | 6                          | Outbound notification gateway; Phase 4 = e-mail only; outbox cascade      |
+| `paper-board/onboarding`    | `onboarding`    | 7                          | Cross-service orchestrator + DLQ + status API                             |
+| `paper-board/environments`  | `environments`  | 8                          | Anthropic-style container config + non-sensitive env vars                 |
+| `paper-board/vaults`        | `vaults`        | 9                          | Anthropic-style encrypted credentials store; GCP KMS envelope             |
+| `paper-board/cli`           | (none)          | —                          | ops tooling (`dlq` + `rollup` + `reconcile`); invoice DEFERRED to Phase 6 |
+| `paper-board/e2e`           | (none)          | —                          | testcontainers flows/ + kind cluster/; neutral ownership (D13)            |
+
+<sup>†</sup> **Historical note:** the Advisory-lock column values shown here (4–9) reflect the manual numbering planned at ADR-0016 authoring time. After this ADR was drafted, verification of `paper-board/sdk/migrator/migrator.go` confirmed that locks are auto-derived via `CRC32(database+schema)` (golang-migrate pgx/v5 driver) — schema-per-service guarantees collision isolation, so the manual IDs above are not used at runtime. The numbers are retained in this ADR row solely as a record of the original planning intent. The deployed [Service map](../src/content/docs/architecture/service-map.md) drops the column.
 
 **Existing service modifications:**
 
