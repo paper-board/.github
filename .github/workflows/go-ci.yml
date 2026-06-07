@@ -53,7 +53,7 @@ on:
 jobs:
   pr-title:
     # Skip on bot-authored PRs (release-please, dependabot, renovate) — their PR titles
-    # follow tool-specific conventions, not the hybrid `(PB-N)` format.
+    # follow tool-specific conventions, not the `(PB-N|S-NNNN)` format.
     if: |
       github.event_name == 'pull_request' &&
       !startsWith(github.head_ref, 'release-please--') &&
@@ -79,10 +79,12 @@ jobs:
             ci
             build
           requireScope: false
-          subjectPattern: ^.+ \(PB-\d+\)$
+          subjectPattern: '^.+ \((PB-\d+|S-\d{4})\)$'
           subjectPatternError: |
-            PR title subject must end with "(PB-N)" where N is the Jira issue number.
-            Example: "feat(agents): add session memory api (PB-72)"
+            PR title subject must end with a tracker reference: "(PB-N)" for Jira-origin
+            Stories or "(S-NNNN)" for local-md Stories (ADR-0020).
+            Examples: "feat(agents): add session memory api (PB-72)"
+                      "chore(ci): update regex (S-0020)"
           validateSingleCommit: false
           headerPatternCorrespondence: type, scope, subject
 
