@@ -182,7 +182,7 @@ When a consumer cannot process an event after exhausting its retry budget, it wr
 record to a `dead_letters` table in its own schema and emits an `audit` event. The
 `agentctl` CLI exposes operator commands to inspect and replay:
 
-```
+```shell
 agentctl onboarding dlq inspect <event_id>
 agentctl onboarding dlq replay  <event_id>
 ```
