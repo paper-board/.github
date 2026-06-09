@@ -171,12 +171,17 @@ helm install vaults "$HELM_REPO/vaults" \
   --set server.kmsSecretName=vaults-kms-secret \
   --wait --timeout 3m
 
-# Step 3 — parallel batch (run all four in background; wait)
-helm install audit         "$HELM_REPO/audit"         --namespace "$NAMESPACE" --version 0.2.0 --set server.enabled=false --wait --timeout 3m &
-helm install metering      "$HELM_REPO/metering"      --namespace "$NAMESPACE" --version 0.2.0 --set server.enabled=false --wait --timeout 3m &
-helm install notifications "$HELM_REPO/notifications" --namespace "$NAMESPACE" --version 0.2.0 --set server.enabled=false --wait --timeout 3m &
-helm install onboarding    "$HELM_REPO/onboarding"    --namespace "$NAMESPACE" --version 0.2.0 --set server.enabled=false --wait --timeout 3m &
-wait && echo "All migrations complete"
+# Step 3 — parallel batch; capture PIDs to detect individual failures
+helm install audit         "$HELM_REPO/audit"         --namespace "$NAMESPACE" --version 0.2.0 --set server.enabled=false --wait --timeout 3m & PID_AUDIT=$!
+helm install metering      "$HELM_REPO/metering"      --namespace "$NAMESPACE" --version 0.2.0 --set server.enabled=false --wait --timeout 3m & PID_METERING=$!
+helm install notifications "$HELM_REPO/notifications" --namespace "$NAMESPACE" --version 0.2.0 --set server.enabled=false --wait --timeout 3m & PID_NOTIF=$!
+helm install onboarding    "$HELM_REPO/onboarding"    --namespace "$NAMESPACE" --version 0.2.0 --set server.enabled=false --wait --timeout 3m & PID_ONBOARD=$!
+FAIL=0
+wait "$PID_AUDIT"    || { echo "ERROR: audit migration failed";         FAIL=1; }
+wait "$PID_METERING" || { echo "ERROR: metering migration failed";      FAIL=1; }
+wait "$PID_NOTIF"    || { echo "ERROR: notifications migration failed"; FAIL=1; }
+wait "$PID_ONBOARD"  || { echo "ERROR: onboarding migration failed";   FAIL=1; }
+[ "$FAIL" -eq 0 ] && echo "All migrations complete" || { echo "One or more migrations FAILED — do not proceed"; exit 1; }
 ```
 
 Verify each schema exists:
