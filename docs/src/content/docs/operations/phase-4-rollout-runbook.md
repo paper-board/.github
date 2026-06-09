@@ -374,6 +374,9 @@ helm rollback <service> 0 --namespace "$NAMESPACE" --wait
 
 # If the rollback involves schema migration, run migrator down FIRST:
 # (only do this on a fresh-install failure with no business data)
+# Retrieve MIGRATION_DB_URL from the k8s Secret created in Phase 0:
+MIGRATION_DB_URL=$(kubectl get secret <svc>-migration-db-url -n "$NAMESPACE" \
+  -o jsonpath='{.data.url}' | base64 -d)
 kubectl run migrator-down --rm -it --restart=Never \
   --image=ghcr.io/paper-board/<svc>-migrator:v0.1.0 \
   --env="MIGRATION_DB_URL=$MIGRATION_DB_URL" \
