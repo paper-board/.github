@@ -225,12 +225,15 @@ helm upgrade vaults "$HELM_REPO/vaults" \
 kubectl rollout status deployment/vaults -n "$NAMESPACE"
 kubectl exec -n "$NAMESPACE" deploy/vaults -- wget -qO- http://localhost:8089/readyz
 
-# audit (gRPC :50054, HTTP :8084)
+# audit (gRPC :50057, HTTP :8084)
+# Note: config.go defaults GRPC_PORT to 50054; must override to 50057 to
+# avoid collision with compute (:50054). See service-map.md note on audit port.
 helm upgrade audit "$HELM_REPO/audit" \
   --namespace "$NAMESPACE" \
   --version 0.2.0 \
   --reuse-values \
   --set server.enabled=true \
+  --set server.config.grpcPort=50057 \
   --wait --timeout 5m
 
 kubectl rollout status deployment/audit -n "$NAMESPACE"
@@ -396,7 +399,7 @@ ______________________________________________________________________
 | ------------- | ---- | ----- |
 | environments  | 8086 | 50056 |
 | vaults        | 8089 | 50089 |
-| audit         | 8084 | 50054 |
+| audit         | 8084 | 50057 |
 | metering      | —    | 50055 |
 | notifications | 8085 | —     |
 | onboarding    | 8089 | —     |
