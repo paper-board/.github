@@ -2,7 +2,7 @@
 title: Data plane and control plane
 description: How paperboard splits control-plane services (identity, platform, billing, gateway) from data-plane services (agents, runtime) and sandbox tier (compute).
 sidebar:
-  order: 4
+  order: 5
 status: shipped
 owner: '@paper-board/docs-maintainers'
 updated: '2026-05-24'

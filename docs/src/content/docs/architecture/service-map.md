@@ -257,7 +257,8 @@ Every service ships two images: a `server` image and (for services with a schema
 
 ## Where to go next
 
-- [Communication patterns](./communication-patterns.md) — REST vs gRPC, sync vs async, outbox.
+- [Outbox pattern](./outbox-pattern.md) — schema, producer API, consumer deduplication, DLQ, retry.
+- [Communication patterns](./communication-patterns.md) — REST vs gRPC, sync vs async.
 - [Data plane vs control plane](./data-plane-control-plane.md) — runtime / compute roles.
 - [ADR-0015 phase rebalance](../decisions/0015-mvp-launch-phase-rebalance.md).
 - [ADR-0016 Phase 4 substrate resequence](../decisions/0016-phase-4-mvp0-substrate-resequence.md).

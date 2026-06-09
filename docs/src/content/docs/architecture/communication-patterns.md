@@ -2,7 +2,7 @@
 title: Communication patterns
 description: REST+JSON+SSE for public APIs, gRPC+Protobuf for internal calls, and the sync-to-async transition at Phase 4.
 sidebar:
-  order: 3
+  order: 4
 status: shipped
 owner: '@paper-board/docs-maintainers'
 updated: '2026-05-24'
@@ -90,42 +90,10 @@ Through Phase 3, all cross-cutting calls (audit writes, usage event recording) a
 synchronous gRPC. This is simpler to reason about and sufficient for a single-digit customer
 count.
 
-From Phase 4, we switch cross-cutting concerns to the outbox + Redis Streams pattern. The
-motivation: a synchronous audit write in the critical path of an LLM response stream adds
-latency and creates a failure mode (audit service down → entire session blocked). With the
-outbox, the domain write and the outbox row happen atomically in one transaction; the async
-dispatcher handles fanout separately.
-
-```mermaid
-flowchart LR
-  subgraph phase3["Phase 1–3 (sync gRPC)"]
-    a3["agents"] -->|"gRPC: audit event"| p3["platform (stub)"]
-    c3["compute"] -->|"gRPC: usage event"| p3
-  end
-
-  subgraph phase4["Phase 4+ (outbox + Redis Streams)"]
-    a4["agents"] -->|"write outbox row (same tx)"| ob4[("outbox table")]
-    c4["compute"] -->|"write usage event row"| ob4
-    ob4 -->|"async dispatcher"| rs4[("Redis Streams")]
-    rs4 --> p4["platform"]
-    p4 --> b4["billing (Phase 5+)"]
-  end
-
-  classDef controlPlane fill:#10b981,stroke:#047857,color:#fff
-  classDef dataPlane fill:#3b82f6,stroke:#1d4ed8,color:#fff
-  classDef sandbox fill:#f97316,stroke:#c2410c,color:#fff
-  classDef external fill:#ef4444,stroke:#b91c1c,color:#fff
-  classDef persistence fill:#6b7280,stroke:#374151,color:#fff
-
-  class a3,a4 dataPlane
-  class p3,p4,b4 controlPlane
-  class c3,c4 sandbox
-  class ob4,rs4 persistence
-```
-
-The outbox pattern provides at-least-once delivery with idempotency keys. A consumer that
-crashes mid-processing will receive the event again on restart and must handle the duplicate
-gracefully.
+From Phase 4, we switch cross-cutting concerns to the outbox + Redis Streams pattern.
+See [Outbox pattern](./outbox-pattern.md) for the full reference: schema, producer API,
+migration helper placement, consumer deduplication, DLQ, retry semantics, ordering, and
+trace propagation.
 
 ## Auth propagation
 
