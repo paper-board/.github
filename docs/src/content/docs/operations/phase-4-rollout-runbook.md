@@ -317,6 +317,10 @@ for svc_port in "environments:8086" "vaults:8089" "audit:8084" "notifications:80
   [ "$STATUS" = "200" ] || echo "WARN: $svc not ready"
 done
 
+# metering is gRPC-only (no HTTP /readyz); check via tcpSocket:
+kubectl exec -n "$NAMESPACE" deploy/metering -- \
+  nc -z localhost 50055 && echo "metering gRPC :50055 reachable" || echo "WARN: metering not ready"
+
 # Onboarding flow — trigger a user.created event and verify the onboarding
 # processed_events table records it within 10 s:
 psql "$POSTGRES_ADMIN_URL" -c \
@@ -392,4 +396,6 @@ ______________________________________________________________________
 | notifications | 8085 | —     |
 | onboarding    | 8089 | —     |
 
-All services expose `/healthz` (liveness) and `/readyz` (readiness) per ADR-0019.
+All services except `metering` expose `/healthz` (liveness) and `/readyz` (readiness) per ADR-0019.
+`metering` is gRPC-only; its Helm chart uses a `tcpSocket` probe on port 50055 instead.
+`vaults` and `onboarding` share the same default port 8089 but run as separate Kubernetes Services with distinct DNS names.
