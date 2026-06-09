@@ -214,14 +214,26 @@ DLQ and requires separate operator action.
 
 ## Ordering guarantees
 
-Events are **ordered per aggregate** within a single Redis stream. The drain goroutine
-publishes rows ordered by `(occurred_at, event_id)` within a batch, and Redis appends
-them to the stream in arrival order. A consumer group processes a single stream
-sequentially per consumer instance.
+The drain goroutine fetches pending rows ordered by `(occurred_at, event_id)` using
+`FOR UPDATE SKIP LOCKED`. Within a single drain batch on a single replica, rows are
+published to Redis in that order. Redis appends each `XADD` to the stream in arrival
+order, so the partial ordering within a batch is preserved.
 
-There is **no global ordering** across streams (`paperboard.identity` vs
-`paperboard.agents` are independent). Cross-stream ordering must be enforced by the
-consuming service's own business logic (e.g. check `occurred_at` before applying).
+**No per-aggregate ordering is guaranteed.** Under multiple service replicas or
+concurrent drain workers, a later event for the same aggregate can be published before
+an earlier event that is still lock-held on another worker. The `outbox_events` schema
+has no `aggregate_id` column or per-aggregate sequence counter.
+
+Consumers MUST NOT assume events for a single entity arrive in causal order.
+Defensive consumer patterns:
+
+- Use `occurred_at` from the envelope to reject stale events (last-write-wins or
+  version-compare).
+- Use the inbox idempotency table to detect and skip duplicates.
+- Model state as append-only or CRDT where out-of-order delivery is benign.
+
+There is also **no ordering across streams** (`paperboard.identity` vs
+`paperboard.agents` are independent streams processed by separate consumer groups).
 
 ## Trace propagation
 
