@@ -269,6 +269,7 @@ helm upgrade onboarding "$HELM_REPO/onboarding" \
   --wait --timeout 5m
 
 kubectl rollout status deployment/onboarding -n "$NAMESPACE"
+kubectl exec -n "$NAMESPACE" deploy/onboarding -- wget -qO- http://localhost:8089/readyz
 ```
 
 ______________________________________________________________________
