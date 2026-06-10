@@ -52,6 +52,8 @@ esac
 # ---------------------------------------------------------------------------
 # Preflight
 # ---------------------------------------------------------------------------
+command -v jq >/dev/null 2>&1 || { echo "ERROR: jq is required (brew install jq / apt-get install jq)" >&2; exit 1; }
+
 if ! gh auth status >/dev/null 2>&1; then
   echo "ERROR: gh auth status failed. Run: gh auth login --scopes admin:org,repo" >&2
   exit 1
@@ -184,7 +186,7 @@ fi
 # ---------------------------------------------------------------------------
 if [ "$MODE" = "apply" ]; then
   echo "Applying Ruleset A (id 16879319, main-protection-universal)..."
-  echo "$RULESET_A_BODY" | gh api -X PUT orgs/paper-board/rulesets/16879319 --input -
+  echo "$RULESET_A_BODY" | gh api -X PUT orgs/paper-board/rulesets/16879319 --input - > /dev/null
   echo "Ruleset A applied."
 
   echo "Locating Ruleset B (main-ci-required)..."
@@ -192,7 +194,7 @@ if [ "$MODE" = "apply" ]; then
 
   if [ -n "$RULESET_B_ID" ]; then
     echo "Ruleset B found (id ${RULESET_B_ID}). Applying PUT..."
-    echo "$RULESET_B_BODY" | gh api -X PUT "orgs/paper-board/rulesets/${RULESET_B_ID}" --input -
+    echo "$RULESET_B_BODY" | gh api -X PUT "orgs/paper-board/rulesets/${RULESET_B_ID}" --input - > /dev/null
     echo "Ruleset B applied."
   else
     echo "Ruleset B not found. Creating via POST..."
