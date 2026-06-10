@@ -42,7 +42,7 @@ Targets all repositories on the default branch **except** the four excluded repo
 | -------------------------------------- | ----------------------------------------------- |
 | `enforcement`                          | `active`                                        |
 | `bypass_actors`                        | `[]` (no bypass)                                |
-| `conditions.repository_name.exclude`   | `.github`, `infra`, `service-template`, `proto` |
+| `conditions.repository_name.exclude`   | `.github`, `infra`, `proto`, `service-template` |
 | `strict_required_status_checks_policy` | `true`                                          |
 | Required status checks (6)             | see table below                                 |
 
