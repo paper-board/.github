@@ -263,8 +263,8 @@ check_field "B.name"       "$(echo "$ACTUAL_B" | jq -r .name)"       "main-ci-re
 check_field "B.enforcement" "$(echo "$ACTUAL_B" | jq -r .enforcement)" "active"
 
 # Verify Ruleset B has all 6 required check contexts
-B_CHECKS=$(echo "$ACTUAL_B" | jq -r '.rules[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context' | sort)
-EXPECTED_CHECKS=$(printf 'CodeRabbit\nci / commitlint\nci / integration\nci / lint\nci / pr-title\nci / unit')
+B_CHECKS=$(echo "$ACTUAL_B" | jq -r '.rules[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context' | LC_ALL=C sort)
+EXPECTED_CHECKS=$(printf 'CodeRabbit\nci / commitlint\nci / integration\nci / lint\nci / pr-title\nci / unit' | LC_ALL=C sort)
 if [ "$B_CHECKS" != "$EXPECTED_CHECKS" ]; then
   echo "MISMATCH [B.required_status_checks]:" >&2
   echo "  actual:   $(echo "$B_CHECKS" | tr '\n' ',' | sed 's/,$//')" >&2
